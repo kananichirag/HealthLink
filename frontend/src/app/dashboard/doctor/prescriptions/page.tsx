@@ -8,6 +8,7 @@ import {
   usePharmacyConnections,
   type PrescriptionItemInput,
 } from '@/hooks/useDoctorQueries';
+import { Plus, Trash2, Send, AlertCircle, CheckCircle } from 'lucide-react';
 
 export default function DoctorPrescriptionsPage() {
   const [showForm, setShowForm] = useState(false);
@@ -69,163 +70,246 @@ export default function DoctorPrescriptionsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Prescriptions</h1>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-        >
-          {showForm ? 'Cancel' : 'New Prescription'}
-        </button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-6 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Prescriptions</h1>
+              <p className="text-gray-600 text-sm mt-1">Create and manage patient prescriptions</p>
+            </div>
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
+            >
+              <Plus size={18} />
+              New Prescription
+            </button>
+          </div>
+        </div>
       </div>
 
-      {showForm && (
-        <form onSubmit={handleCreate} className="bg-white p-6 rounded-lg shadow space-y-4">
-          <h2 className="text-lg font-semibold">Create Prescription</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Patient</label>
-              <select
-                value={patientId}
-                onChange={(e) => setPatientId(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2"
-                required
+      <div className="px-6 py-6">
+        {/* Create Prescription Form */}
+        {showForm && (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Create New Prescription</h2>
+              <button
+                onClick={() => setShowForm(false)}
+                className="text-gray-400 hover:text-gray-600"
               >
-                <option value="">Select patient</option>
-                {patients.map((p: any) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Target Pharmacy (optional)</label>
-              <select
-                value={targetPharmacyId}
-                onChange={(e) => setTargetPharmacyId(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2"
-              >
-                <option value="">None</option>
-                {activeConnections.map((c: any) => (
-                  <option key={c.pharmacy?.id || c.pharmacyId} value={c.pharmacy?.id || c.pharmacyId}>
-                    {c.pharmacy?.name || c.pharmacyId}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="font-medium">Medicine Items</h3>
-              <button type="button" onClick={addItem} className="text-sm text-indigo-600 hover:underline">
-                + Add Item
+                ✕
               </button>
             </div>
-            {items.map((item, idx) => (
-              <div key={idx} className="grid grid-cols-2 md:grid-cols-5 gap-2 items-end">
-                <input
-                  type="text"
-                  placeholder="Medicine Name"
-                  value={item.medicineName}
-                  onChange={(e) => updateItem(idx, 'medicineName', e.target.value)}
-                  className="border rounded-lg px-3 py-2"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Dosage"
-                  value={item.dosage}
-                  onChange={(e) => updateItem(idx, 'dosage', e.target.value)}
-                  className="border rounded-lg px-3 py-2"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Frequency"
-                  value={item.frequency}
-                  onChange={(e) => updateItem(idx, 'frequency', e.target.value)}
-                  className="border rounded-lg px-3 py-2"
-                  required
-                />
-                <input
-                  type="number"
-                  placeholder="Qty"
-                  value={item.quantity}
-                  onChange={(e) => updateItem(idx, 'quantity', parseInt(e.target.value) || 1)}
-                  className="border rounded-lg px-3 py-2"
-                  min={1}
-                  required
-                />
+
+            <form onSubmit={handleCreate} className="space-y-6">
+              {/* Patient Selection */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">Select Patient *</label>
+                  <select
+                    value={patientId}
+                    onChange={(e) => setPatientId(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Choose a patient...</option>
+                    {patients.map((p: any) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-900 mb-2">Target Pharmacy (Optional)</label>
+                  <select
+                    value={targetPharmacyId}
+                    onChange={(e) => setTargetPharmacyId(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  >
+                    <option value="">Select pharmacy...</option>
+                    {activeConnections.map((c: any) => (
+                      <option key={c.pharmacy?.id || c.pharmacyId} value={c.pharmacy?.id || c.pharmacyId}>
+                        {c.pharmacy?.name || c.pharmacyId}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Medicine Items */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Medicine Items</h3>
+                  <button
+                    type="button"
+                    onClick={addItem}
+                    className="flex items-center gap-1 text-sm text-teal-600 hover:text-teal-700 font-medium"
+                  >
+                    <Plus size={16} />
+                    Add Item
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {items.map((item, idx) => (
+                    <div key={idx} className="flex gap-3 items-end">
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Medicine Name</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., Amoxicillin"
+                          value={item.medicineName}
+                          onChange={(e) => updateItem(idx, 'medicineName', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
+                          required
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Dosage</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., 500mg"
+                          value={item.dosage}
+                          onChange={(e) => updateItem(idx, 'dosage', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
+                          required
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Frequency</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., 3x daily"
+                          value={item.frequency}
+                          onChange={(e) => updateItem(idx, 'frequency', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
+                          required
+                        />
+                      </div>
+                      <div className="w-20">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Qty</label>
+                        <input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => updateItem(idx, 'quantity', parseInt(e.target.value) || 1)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
+                          min={1}
+                          required
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeItem(idx)}
+                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Error Message */}
+              {createPrescription.isError && (
+                <div className="flex gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-red-900">Error creating prescription</p>
+                    <p className="text-sm text-red-700 mt-1">{(createPrescription.error as Error).message}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t border-gray-200">
                 <button
                   type="button"
-                  onClick={() => removeItem(idx)}
-                  className="text-red-500 hover:text-red-700 text-sm py-2"
+                  onClick={() => setShowForm(false)}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
                 >
-                  Remove
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={createPrescription.isPending}
+                  className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                >
+                  {createPrescription.isPending ? 'Creating...' : 'Create Prescription'}
                 </button>
               </div>
-            ))}
+            </form>
           </div>
-
-          {createPrescription.isError && (
-            <p className="text-red-600 text-sm">{(createPrescription.error as Error).message}</p>
-          )}
-          <button
-            type="submit"
-            disabled={createPrescription.isPending}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition"
-          >
-            {createPrescription.isPending ? 'Creating...' : 'Create Prescription'}
-          </button>
-        </form>
-      )}
-
-      <div className="bg-white p-6 rounded-lg shadow space-y-4">
-        <h2 className="text-lg font-semibold">Dispatch Prescription</h2>
-        <form onSubmit={handleDispatch} className="flex flex-wrap gap-3 items-end">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Prescription ID</label>
-            <input
-              type="text"
-              placeholder="Prescription ID"
-              value={dispatchId}
-              onChange={(e) => setDispatchId(e.target.value)}
-              className="border rounded-lg px-3 py-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Pharmacy</label>
-            <select
-              value={dispatchPharmacyId}
-              onChange={(e) => setDispatchPharmacyId(e.target.value)}
-              className="border rounded-lg px-3 py-2"
-              required
-            >
-              <option value="">Select pharmacy</option>
-              {activeConnections.map((c: any) => (
-                <option key={c.pharmacy?.id || c.pharmacyId} value={c.pharmacy?.id || c.pharmacyId}>
-                  {c.pharmacy?.name || c.pharmacyId}
-                </option>
-              ))}
-            </select>
-          </div>
-          <button
-            type="submit"
-            disabled={dispatchPrescription.isPending}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition"
-          >
-            {dispatchPrescription.isPending ? 'Dispatching...' : 'Dispatch'}
-          </button>
-        </form>
-        {dispatchPrescription.isError && (
-          <p className="text-red-600 text-sm">{(dispatchPrescription.error as Error).message}</p>
         )}
-        {dispatchPrescription.isSuccess && (
-          <p className="text-green-600 text-sm">Prescription dispatched successfully!</p>
-        )}
+
+        {/* Dispatch Prescription Section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Dispatch Prescription</h2>
+
+          <form onSubmit={handleDispatch} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">Prescription ID *</label>
+                <input
+                  type="text"
+                  placeholder="Enter prescription ID"
+                  value={dispatchId}
+                  onChange={(e) => setDispatchId(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">Select Pharmacy *</label>
+                <select
+                  value={dispatchPharmacyId}
+                  onChange={(e) => setDispatchPharmacyId(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Choose pharmacy...</option>
+                  {activeConnections.map((c: any) => (
+                    <option key={c.pharmacy?.id || c.pharmacyId} value={c.pharmacy?.id || c.pharmacyId}>
+                      {c.pharmacy?.name || c.pharmacyId}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-end">
+                <button
+                  type="submit"
+                  disabled={dispatchPrescription.isPending}
+                  className="w-full px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center gap-2"
+                >
+                  <Send size={18} />
+                  {dispatchPrescription.isPending ? 'Dispatching...' : 'Dispatch'}
+                </button>
+              </div>
+            </div>
+
+            {/* Status Messages */}
+            {dispatchPrescription.isError && (
+              <div className="flex gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-red-900">Error dispatching prescription</p>
+                  <p className="text-sm text-red-700 mt-1">{(dispatchPrescription.error as Error).message}</p>
+                </div>
+              </div>
+            )}
+
+            {dispatchPrescription.isSuccess && (
+              <div className="flex gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <CheckCircle size={20} className="text-green-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-green-900">Success!</p>
+                  <p className="text-sm text-green-700 mt-1">Prescription dispatched successfully to the pharmacy</p>
+                </div>
+              </div>
+            )}
+          </form>
+        </div>
       </div>
     </div>
   );

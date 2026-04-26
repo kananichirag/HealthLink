@@ -55,10 +55,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-indigo-200 border-t-indigo-600 mb-4" />
-          <p className="text-lg text-gray-600 font-medium">Loading your dashboard...</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#f7faf8' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ width: '40px', height: '40px', border: '3px solid #e5e9e7', borderTopColor: '#005c55', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }} />
+          <p style={{ fontSize: '14px', color: '#3e4947', fontFamily: 'Inter, system-ui, sans-serif' }}>Loading your dashboard...</p>
         </div>
       </div>
     );
@@ -67,14 +67,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!isAuthenticated || !userRole) return null;
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div style={{ display: 'flex', height: '100vh', background: '#f7faf8', fontFamily: 'Inter, system-ui, sans-serif' }}>
       <Sidebar role={userRole} />
-      <div className="flex-1 flex flex-col md:ml-0 min-w-0 overflow-hidden">
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
         <Header userName={userName} />
-        <main className="flex-1 overflow-auto p-6">
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
+        <main style={{ flex: 1, overflowY: 'auto', padding: '28px 32px' }}>
+          {children}
         </main>
       </div>
     </div>

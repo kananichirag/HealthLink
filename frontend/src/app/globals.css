@@ -1,32 +1,58 @@
 @import "tailwindcss";
 
+/* MediFlow Design System — Stitch project 6783856950358988859 */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --primary: #005c55;
+  --primary-container: #0f766e;
+  --on-primary: #ffffff;
+  --on-primary-container: #a3faef;
+  --secondary: #4648d4;
+  --secondary-container: #6063ee;
+  --on-secondary: #ffffff;
+  --tertiary: #7f4025;
+  --background: #f7faf8;
+  --surface: #f7faf8;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f1f4f3;
+  --surface-container: #ebefed;
+  --surface-container-high: #e5e9e7;
+  --on-surface: #181c1c;
+  --on-surface-variant: #3e4947;
+  --outline: #6e7977;
+  --outline-variant: #bdc9c6;
+  --error: #ba1a1a;
+  --error-container: #ffdad6;
   color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
 }
 
 body {
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--on-surface);
+  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Ensure all inputs have visible text and placeholders */
 input, select, textarea {
-  color: #111827 !important;
-  -webkit-text-fill-color: #111827;
+  color: var(--on-surface) !important;
+  -webkit-text-fill-color: var(--on-surface);
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 input::placeholder, textarea::placeholder {
-  color: #6b7280 !important;
-  -webkit-text-fill-color: #6b7280;
+  color: var(--on-surface-variant) !important;
+  -webkit-text-fill-color: var(--on-surface-variant);
   opacity: 1;
+}
+
+/* Focus ring using primary teal */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary-container) !important;
+  box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.2);
 }

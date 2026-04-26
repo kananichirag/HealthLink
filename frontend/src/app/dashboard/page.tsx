@@ -15,7 +15,7 @@ interface DecodedToken {
 }
 
 const DEFAULT_ROUTES: Record<UserRole, string> = {
-  DOCTOR: '/dashboard/doctor/patients',
+  DOCTOR: '/dashboard/doctor',
   PATIENT: '/dashboard/patient/doctors',
   PHARMACY: '/dashboard/pharmacy/prescriptions',
   ADMIN: '/dashboard/admin/tenants',

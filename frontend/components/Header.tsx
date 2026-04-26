@@ -6,13 +6,10 @@ import NotificationBell from './notifications/NotificationBell';
 
 interface HeaderProps {
   userName: string;
+  placeholder?: string;
 }
 
-/**
- * Header component for authenticated pages
- * Displays user name and logout button
- */
-export default function Header({ userName }: HeaderProps) {
+export default function Header({ userName, placeholder = 'Search patients, records, or files...' }: HeaderProps) {
   const router = useRouter();
 
   const handleLogout = () => {
@@ -20,58 +17,88 @@ export default function Header({ userName }: HeaderProps) {
     router.push('/login');
   };
 
+  const initials = userName
+    .split('@')[0]
+    .split('.')
+    .map((p) => p[0]?.toUpperCase() ?? '')
+    .join('')
+    .slice(0, 2);
+
+  const displayName = userName.includes('@')
+    ? userName.split('@')[0].replace('.', ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+    : userName;
+
   return (
-    <header className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-gray-100">
-      <div className="flex items-center justify-between px-6 py-4">
-        {/* Left side */}
-        <div className="flex-1">
-        </div>
+    <header
+      style={{
+        height: '56px',
+        background: '#ffffff',
+        borderBottom: '1px solid #e5e9e7',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 24px',
+        gap: '16px',
+        flexShrink: 0,
+        fontFamily: 'Inter, system-ui, sans-serif',
+      }}
+    >
+      {/* Search */}
+      <div style={{ flex: 1, maxWidth: '400px', position: 'relative' }}>
+        <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#6e7977', pointerEvents: 'none' }}>
+          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </span>
+        <input
+          type="text"
+          placeholder={placeholder}
+          style={{
+            width: '100%',
+            padding: '7px 12px 7px 32px',
+            border: '1px solid #e5e9e7',
+            borderRadius: '8px',
+            fontSize: '13px',
+            color: '#181c1c',
+            background: '#f7faf8',
+            outline: 'none',
+            fontFamily: 'Inter, system-ui, sans-serif',
+          }}
+          onFocus={(e) => { e.target.style.borderColor = '#0f766e'; e.target.style.background = '#fff'; }}
+          onBlur={(e) => { e.target.style.borderColor = '#e5e9e7'; e.target.style.background = '#f7faf8'; }}
+        />
+      </div>
 
-        {/* Center - search or actions could go here */}
-        <div className="flex-1 flex justify-center">
-          <div className="relative max-w-md w-full">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <input
-              type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-xl leading-5 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
-              placeholder="Search..."
-            />
+      <div style={{ flex: 1 }} />
+
+      {/* Right side */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* Notification bell */}
+        <NotificationBell />
+
+        {/* Help */}
+        <button
+          style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid #e5e9e7', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#6e7977' }}
+        >
+          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
+
+        {/* User info */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ fontSize: '13px', fontWeight: 600, color: '#181c1c', margin: 0, lineHeight: 1.2 }}>Dr. {displayName}</p>
+            <p style={{ fontSize: '11px', color: '#6e7977', margin: 0 }}>Chief of Cardiology</p>
           </div>
-        </div>
-
-        {/* Right side - user info and logout */}
-        <div className="flex-1 flex items-center justify-end space-x-4">
-          {/* Notifications */}
-          <NotificationBell />
-
-          {/* User menu */}
-          <div className="flex items-center space-x-3">
-            <div className="text-right">
-              <p className="text-sm font-semibold text-gray-900">{userName}</p>
-              <p className="text-xs text-gray-500 flex items-center">
-                <span className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></span>
-                Online
-              </p>
-            </div>
-
-            <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-              {userName.charAt(0).toUpperCase()}
-            </div>
-
-            <button
-              onClick={handleLogout}
-              className="group flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 font-medium text-sm shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              aria-label="Logout"
-            >
-              <svg className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Logout
-            </button>
+          <div
+            style={{
+              width: '34px', height: '34px', borderRadius: '50%',
+              background: 'linear-gradient(135deg, #0f766e, #005c55)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff', fontSize: '12px', fontWeight: 700, flexShrink: 0,
+            }}
+          >
+            {initials || 'DR'}
           </div>
         </div>
       </div>

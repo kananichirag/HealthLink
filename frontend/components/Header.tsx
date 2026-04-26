@@ -37,25 +37,25 @@ export default function Header({ userName, userRole, placeholder = 'Search patie
       case 'DOCTOR':
         return {
           prefix: 'Dr.',
-          title: 'Chief Physician',
+          title: 'Doctor Portal',
           gradient: 'linear-gradient(135deg, #0f766e, #005c55)',
         };
       case 'PATIENT':
         return {
           prefix: '',
-          title: 'Patient',
+          title: 'Patient Portal',
           gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)',
         };
       case 'PHARMACY':
         return {
           prefix: '',
-          title: 'Pharmacist',
+          title: 'Pharmacy Portal',
           gradient: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
         };
       case 'ADMIN':
         return {
           prefix: '',
-          title: 'System Administrator',
+          title: 'Admin Portal',
           gradient: 'linear-gradient(135deg, #ef4444, #dc2626)',
         };
       default:

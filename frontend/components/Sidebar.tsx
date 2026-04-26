@@ -140,7 +140,9 @@ export default function Sidebar({ role }: SidebarProps) {
             </div>
             <div>
               <p style={{ fontWeight: 700, fontSize: '15px', color: '#181c1c', lineHeight: 1 }}>MediFlow</p>
-              <p style={{ fontSize: '9px', color: '#6e7977', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: '2px' }}>Clinical Portal</p>
+              <p style={{ fontSize: '9px', color: '#6e7977', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: '2px' }}>
+                {role === 'PATIENT' ? 'Patient Portal' : role === 'DOCTOR' ? 'Doctor Portal' : role === 'PHARMACY' ? 'Pharmacy Portal' : 'Admin Portal'}
+              </p>
             </div>
           </div>
         </div>

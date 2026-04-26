@@ -230,17 +230,6 @@ export default function DoctorPatientsPage() {
           </div>
         </div>
       </div>
-
-      <div style={{ background: 'linear-gradient(135deg, #005c55, #0f766e)', borderRadius: '12px', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', overflow: 'hidden', position: 'relative' }}>
-        <div style={{ position: 'absolute', right: '24px', top: '50%', transform: 'translateY(-50%)', opacity: 0.15 }}>
-          <svg width="80" height="80" fill="none" stroke="white" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-        </div>
-        <div>
-          <p style={{ fontSize: '14px', fontWeight: 700, color: '#fff', margin: '0 0 4px' }}>New Feature: Telehealth Integration</p>
-          <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.75)', margin: '0 0 12px', lineHeight: 1.5 }}>You can now schedule and conduct virtual consultations directly from the patient details page.</p>
-          <button style={{ padding: '7px 16px', background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', color: '#fff', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, system-ui, sans-serif' }}>Learn more</button>
-        </div>
-      </div>
     </div>
   );
 }

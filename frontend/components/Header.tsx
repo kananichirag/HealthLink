@@ -4,12 +4,15 @@ import { useRouter } from 'next/navigation';
 import { removeToken } from '@/lib/api';
 import NotificationBell from './notifications/NotificationBell';
 
+type UserRole = 'DOCTOR' | 'PATIENT' | 'PHARMACY' | 'ADMIN';
+
 interface HeaderProps {
   userName: string;
+  userRole?: UserRole;
   placeholder?: string;
 }
 
-export default function Header({ userName, placeholder = 'Search patients, records, or files...' }: HeaderProps) {
+export default function Header({ userName, userRole, placeholder = 'Search patients, records, or files...' }: HeaderProps) {
   const router = useRouter();
 
   const handleLogout = () => {
@@ -27,6 +30,44 @@ export default function Header({ userName, placeholder = 'Search patients, recor
   const displayName = userName.includes('@')
     ? userName.split('@')[0].replace('.', ' ').replace(/\b\w/g, (c) => c.toUpperCase())
     : userName;
+
+  // Get role-specific display information
+  const getRoleDisplay = (role?: UserRole) => {
+    switch (role) {
+      case 'DOCTOR':
+        return {
+          prefix: 'Dr.',
+          title: 'Chief Physician',
+          gradient: 'linear-gradient(135deg, #0f766e, #005c55)',
+        };
+      case 'PATIENT':
+        return {
+          prefix: '',
+          title: 'Patient',
+          gradient: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+        };
+      case 'PHARMACY':
+        return {
+          prefix: '',
+          title: 'Pharmacist',
+          gradient: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+        };
+      case 'ADMIN':
+        return {
+          prefix: '',
+          title: 'System Administrator',
+          gradient: 'linear-gradient(135deg, #ef4444, #dc2626)',
+        };
+      default:
+        return {
+          prefix: '',
+          title: 'User',
+          gradient: 'linear-gradient(135deg, #6b7280, #4b5563)',
+        };
+    }
+  };
+
+  const roleDisplay = getRoleDisplay(userRole);
 
   return (
     <header
@@ -87,18 +128,20 @@ export default function Header({ userName, placeholder = 'Search patients, recor
         {/* User info */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{ textAlign: 'right' }}>
-            <p style={{ fontSize: '13px', fontWeight: 600, color: '#181c1c', margin: 0, lineHeight: 1.2 }}>Dr. {displayName}</p>
-            <p style={{ fontSize: '11px', color: '#6e7977', margin: 0 }}>Chief of Cardiology</p>
+            <p style={{ fontSize: '13px', fontWeight: 600, color: '#181c1c', margin: 0, lineHeight: 1.2 }}>
+              {roleDisplay.prefix} {displayName}
+            </p>
+            <p style={{ fontSize: '11px', color: '#6e7977', margin: 0 }}>{roleDisplay.title}</p>
           </div>
           <div
             style={{
               width: '34px', height: '34px', borderRadius: '50%',
-              background: 'linear-gradient(135deg, #0f766e, #005c55)',
+              background: roleDisplay.gradient,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff', fontSize: '12px', fontWeight: 700, flexShrink: 0,
             }}
           >
-            {initials || 'DR'}
+            {initials || userRole?.substring(0, 2) || 'U'}
           </div>
         </div>
       </div>

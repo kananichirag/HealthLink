@@ -70,7 +70,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div style={{ display: 'flex', height: '100vh', background: '#f7faf8', fontFamily: 'Inter, system-ui, sans-serif' }}>
       <Sidebar role={userRole} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-        <Header userName={userName} />
+        <Header userName={userName} userRole={userRole} />
         <main style={{ flex: 1, overflowY: 'auto', padding: '28px 32px' }}>
           {children}
         </main>

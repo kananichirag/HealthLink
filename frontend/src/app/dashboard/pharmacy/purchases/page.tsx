@@ -1,18 +1,33 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   usePurchases,
   useRecordPurchase,
   useMedicines,
   type RecordPurchaseInput,
 } from '@/hooks/usePharmacyQueries';
+import {
+  Package,
+  FileText,
+  Printer,
+  TrendingUp,
+  Calendar,
+  Search,
+  AlertCircle,
+  CheckCircle
+} from 'lucide-react';
 
 export default function PharmacyPurchasesPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const [form, setForm] = useState<RecordPurchaseInput>({
     medicineId: '',
@@ -37,6 +52,9 @@ export default function PharmacyPurchasesPage() {
 
   const recordPurchase = useRecordPurchase();
 
+  // Calculate total spending
+  const totalSpending = purchases.reduce((sum: number, p: any) => sum + Number(p.totalCost || 0), 0);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.medicineId || !form.batchNumber || !form.quantity || !form.sellerName || !form.sellerCompany) return;
@@ -56,198 +74,258 @@ export default function PharmacyPurchasesPage() {
     });
   };
 
+  const totalCost = form.quantity * form.unitCost;
+
+  // Top suppliers
+  const supplierStats = purchases.reduce((acc: any, p: any) => {
+    const company = p.sellerCompany || 'Unknown';
+    if (!acc[company]) acc[company] = 0;
+    acc[company] += Number(p.totalCost || 0);
+    return acc;
+  }, {});
+  const topSuppliers = Object.entries(supplierStats)
+    .map(([name, amount]) => ({ name, amount: amount as number }))
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 3);
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Purchases</h1>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-        >
-          {showForm ? 'Cancel' : 'Record Purchase'}
-        </button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-6 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
+                <span>Pharmacy Module</span>
+                <span>/</span>
+                <span className="text-teal-600 font-medium">Purchase Recording</span>
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900">Inventory Inbound</h1>
+              <p className="text-gray-600 text-sm mt-1">Record new medicinal supplies and update stock records.</p>
+            </div>
+            <div className="flex gap-3">
+              <button className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                <FileText size={18} />
+                Import CSV
+              </button>
+              <button className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                <Printer size={18} />
+                Print Log
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow space-y-4">
-          <h2 className="text-lg font-semibold">Record New Purchase</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Medicine *</label>
-              <select
-                value={form.medicineId}
-                onChange={(e) => setForm({ ...form, medicineId: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2"
-                required
-              >
-                <option value="">Select medicine</option>
-                {medicines.map((m: any) => (
-                  <option key={m.id} value={m.id}>{m.name} ({m.batchNumber})</option>
-                ))}
-              </select>
+      <div className="px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* Record Purchase Form */}
+          <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                  <Package size={20} className="text-teal-600" />
+                </div>
+                <h2 className="text-lg font-bold text-gray-900">Record Purchase</h2>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Batch Number *</label>
-              <input
-                type="text"
-                value={form.batchNumber}
-                onChange={(e) => setForm({ ...form, batchNumber: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Quantity *</label>
-              <input
-                type="number"
-                value={form.quantity}
-                onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 0 })}
-                className="w-full border rounded-lg px-3 py-2"
-                min={1}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Unit Cost *</label>
-              <input
-                type="number"
-                value={form.unitCost}
-                onChange={(e) => setForm({ ...form, unitCost: parseFloat(e.target.value) || 0 })}
-                className="w-full border rounded-lg px-3 py-2"
-                min={0}
-                step="0.01"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Seller Name *</label>
-              <input
-                type="text"
-                value={form.sellerName}
-                onChange={(e) => setForm({ ...form, sellerName: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Seller Company *</label>
-              <input
-                type="text"
-                value={form.sellerCompany}
-                onChange={(e) => setForm({ ...form, sellerCompany: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Date *</label>
-              <input
-                type="date"
-                value={form.purchaseDate}
-                onChange={(e) => setForm({ ...form, purchaseDate: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2"
-                required
-              />
-            </div>
-          </div>
-          {recordPurchase.isError && (
-            <p className="text-red-600 text-sm">{(recordPurchase.error as Error).message}</p>
-          )}
-          <button
-            type="submit"
-            disabled={recordPurchase.isPending}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition"
-          >
-            {recordPurchase.isPending ? 'Recording...' : 'Record Purchase'}
-          </button>
-        </form>
-      )}
 
-      {/* Purchase History */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-4 border-b flex flex-wrap gap-4 items-end">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
-              className="border rounded-lg px-3 py-2"
-            />
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              {/* Medicine Search */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">MEDICINE SEARCH</label>
+                <div className="relative">
+                  <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <select
+                    value={form.medicineId}
+                    onChange={(e) => setForm({ ...form, medicineId: e.target.value })}
+                    className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select Medicine...</option>
+                    {medicines.map((m: any) => (
+                      <option key={m.id} value={m.id}>{m.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Batch Number and Purchase Date */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">BATCH NUMBER</label>
+                  <input
+                    type="text"
+                    value={form.batchNumber}
+                    onChange={(e) => setForm({ ...form, batchNumber: e.target.value })}
+                    placeholder="e.g., B-4028"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">PURCHASE DATE</label>
+                  <input
+                    type="date"
+                    value={form.purchaseDate}
+                    onChange={(e) => setForm({ ...form, purchaseDate: e.target.value })}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Supplier Name */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">SUPPLIER NAME</label>
+                <select
+                  value={form.sellerCompany}
+                  onChange={(e) => setForm({ ...form, sellerCompany: e.target.value, sellerName: e.target.value })}
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Select Supplier...</option>
+                  <option value="Global Health Dist.">Global Health Dist.</option>
+                  <option value="MediSource Ltd.">MediSource Ltd.</option>
+                  <option value="Reliance Pharma">Reliance Pharma</option>
+                  <option value="PharmaCorp Ltd.">PharmaCorp Ltd.</option>
+                </select>
+              </div>
+
+              {/* Quantity, Unit Cost, Total Cost */}
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Quantity</label>
+                  <input
+                    type="number"
+                    value={form.quantity}
+                    onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 0 })}
+                    placeholder="100"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    min={1}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Unit Cost ($)</label>
+                  <input
+                    type="number"
+                    value={form.unitCost}
+                    onChange={(e) => setForm({ ...form, unitCost: parseFloat(e.target.value) || 0 })}
+                    placeholder="4.50"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    min={0}
+                    step="0.01"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Total Cost</label>
+                  <div className="px-3 py-2.5 bg-teal-50 border border-teal-200 rounded-lg text-teal-900 font-semibold">
+                    ${totalCost.toFixed(2)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Error/Success Messages */}
+              {recordPurchase.isError && (
+                <div className="flex gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-red-900">Error recording purchase</p>
+                    <p className="text-sm text-red-700 mt-1">{(recordPurchase.error as Error).message}</p>
+                  </div>
+                </div>
+              )}
+
+              {recordPurchase.isSuccess && (
+                <div className="flex gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <CheckCircle size={20} className="text-green-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm font-medium text-green-900">Purchase recorded successfully!</p>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={recordPurchase.isPending}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold"
+              >
+                <Package size={18} />
+                {recordPurchase.isPending ? 'Recording...' : 'Record Purchase'}
+              </button>
+            </form>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
-              className="border rounded-lg px-3 py-2"
-            />
+
+          {/* Recent Transactions Sidebar */}
+          <div className="bg-white rounded-lg border border-gray-200">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-lg font-bold text-gray-900">Recent Transactions</h2>
+                <button className="text-sm text-teal-600 hover:text-teal-700 font-medium">View All</button>
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="space-y-3">
+                {purchases.slice(0, 5).map((p: any) => (
+                  <div key={p.id} className="p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{p.medicine?.name || 'Unknown'}</p>
+                        <p className="text-xs text-gray-500">{p.sellerCompany}</p>
+                      </div>
+                      <span className="text-sm font-bold text-teal-600">${Number(p.totalCost || 0).toFixed(2)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>{isClient && p.purchaseDate ? new Date(p.purchaseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Loading...'}</span>
+                      <span>{p.quantity} units</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
-        {isLoading && <p className="p-6 text-gray-500">Loading purchases...</p>}
-        {error && <p className="p-6 text-red-600">Error: {(error as Error).message}</p>}
-
-        {!isLoading && !error && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-600">Medicine</th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-600">Batch</th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-600">Qty</th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-600">Unit Cost</th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-600">Total</th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-600">Seller</th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-600">Company</th>
-                  <th className="px-4 py-3 text-sm font-medium text-gray-600">Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {purchases.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="px-4 py-6 text-center text-gray-500">
-                      No purchase records found
-                    </td>
-                  </tr>
-                ) : (
-                  purchases.map((p: any) => (
-                    <tr key={p.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium">{p.medicine?.name || '—'}</td>
-                      <td className="px-4 py-3 text-gray-600">{p.batchNumber}</td>
-                      <td className="px-4 py-3 text-gray-600">{p.quantity}</td>
-                      <td className="px-4 py-3 text-gray-600">₹{Number(p.unitCost).toFixed(2)}</td>
-                      <td className="px-4 py-3 text-gray-600">₹{Number(p.totalCost).toFixed(2)}</td>
-                      <td className="px-4 py-3 text-gray-600">{p.sellerName}</td>
-                      <td className="px-4 py-3 text-gray-600">{p.sellerCompany}</td>
-                      <td className="px-4 py-3 text-gray-600">
-                        {p.purchaseDate ? new Date(p.purchaseDate).toLocaleDateString() : '—'}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+        {/* Bottom Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Total Spending Card */}
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-6 text-white">
+            <p className="text-sm text-blue-100 mb-2">Total Spending</p>
+            <h3 className="text-3xl font-bold mb-1">${totalSpending.toFixed(2)}</h3>
+            <div className="flex items-center gap-1 text-sm">
+              <TrendingUp size={14} />
+              <span>+19% from last month</span>
+            </div>
           </div>
-        )}
 
-        <div className="flex items-center justify-between p-4 border-t">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="px-3 py-1 border rounded disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <span className="text-sm text-gray-600">Page {page}</span>
-          <button
-            onClick={() => setPage((p) => p + 1)}
-            disabled={purchases.length < 10}
-            className="px-3 py-1 border rounded disabled:opacity-50"
-          >
-            Next
-          </button>
+          {/* Top Suppliers */}
+          <div className="lg:col-span-2 bg-white rounded-lg border border-gray-200 p-6">
+            <h3 className="text-sm font-bold text-gray-900 mb-4">TOP SUPPLIERS</h3>
+            <div className="space-y-3">
+              {topSuppliers.map((supplier, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-teal-600"></div>
+                    <span className="text-sm text-gray-900">{supplier.name}</span>
+                  </div>
+                  <span className="text-sm font-semibold text-gray-900">${supplier.amount.toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Compliance Billing */}
+          <div className="lg:col-span-3 bg-white rounded-lg border border-gray-200 p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                <CheckCircle size={20} className="text-teal-600" />
+              </div>
+              <h3 className="text-sm font-bold text-gray-900">Compliance Billing</h3>
+              <span className="ml-auto text-2xl font-bold text-teal-600">98.4%</span>
+            </div>
+            <p className="text-xs text-gray-600">All purchases comply with regulatory standards</p>
+          </div>
         </div>
       </div>
     </div>

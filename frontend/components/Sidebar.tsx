@@ -65,7 +65,6 @@ export default function Sidebar({ role }: SidebarProps) {
         ];
       case 'PATIENT':
         return [
-          { label: 'Dashboard', href: '/dashboard/patient', icon: Icons.dashboard },
           { label: 'Doctors', href: '/dashboard/patient/doctors', icon: Icons.doctors },
           { label: 'Appointments', href: '/dashboard/patient/appointments', icon: Icons.schedule },
           { label: 'Prescriptions', href: '/dashboard/patient/prescriptions', icon: Icons.prescriptions },

@@ -1,0 +1,460 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Existing Enums ───
+
+enum Role {
+  DOCTOR
+  PATIENT
+  PHARMACY
+  ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum PrescriptionStatus {
+  PENDING
+  DISPENSED
+  CANCELLED
+}
+
+enum OrderStatus {
+  PENDING
+  SHIPPED
+  DELIVERED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+}
+
+enum PaymentType {
+  CONSULTATION
+  MEDICINE
+}
+
+enum SalePaymentMethod {
+  CASH
+  CARD
+  ONLINE
+}
+
+enum DiscountType {
+  FLAT
+  PERCENTAGE
+}
+
+// ─── New Enums ───
+
+enum TenantType {
+  PHARMACY
+  CLINIC
+}
+
+enum ConnectionStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum AllergySeverity {
+  LOW
+  MODERATE
+  HIGH
+  CRITICAL
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+// ─── New Models ───
+
+model Tenant {
+  id        String     @id @default(uuid())
+  name      String
+  type      TenantType
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  users User[]
+}
+
+model DoctorPharmacyConnection {
+  id         String           @id @default(uuid())
+  doctorId   String
+  pharmacyId String
+  status     ConnectionStatus @default(PENDING)
+  tenantId   String
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  doctor   User @relation("DoctorConnections", fields: [doctorId], references: [id])
+  pharmacy User @relation("PharmacyConnections", fields: [pharmacyId], references: [id])
+
+  @@unique([doctorId, pharmacyId])
+  @@index([doctorId, status])
+  @@index([pharmacyId, status])
+  @@index([tenantId])
+}
+
+model AllergyReport {
+  id          String          @id @default(uuid())
+  patientId   String
+  doctorId    String
+  allergyType String
+  symptoms    String
+  severity    AllergySeverity
+  notes       String?
+  tenantId    String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id])
+  doctor  User    @relation("DoctorAllergyReports", fields: [doctorId], references: [id])
+
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([tenantId])
+  @@index([createdAt])
+}
+
+model Appointment {
+  id        String            @id @default(uuid())
+  patientId String
+  doctorId  String
+  date      DateTime
+  timeSlot  String
+  status    AppointmentStatus @default(SCHEDULED)
+  tenantId  String
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id])
+  doctor  User    @relation("DoctorAppointments", fields: [doctorId], references: [id])
+
+  @@unique([doctorId, date, timeSlot])
+  @@index([patientId])
+  @@index([doctorId, date])
+  @@index([tenantId])
+  @@index([status])
+}
+
+model DoctorSchedule {
+  id        String    @id @default(uuid())
+  doctorId  String
+  dayOfWeek DayOfWeek
+  startTime String
+  endTime   String
+  tenantId  String
+  createdAt DateTime  @default(now())
+
+  doctor User @relation("DoctorSchedules", fields: [doctorId], references: [id])
+
+  @@unique([doctorId, dayOfWeek, startTime])
+  @@index([doctorId])
+  @@index([tenantId])
+}
+
+model BlockedDate {
+  id       String   @id @default(uuid())
+  doctorId String
+  date     DateTime
+  tenantId String
+
+  doctor User @relation("DoctorBlockedDates", fields: [doctorId], references: [id])
+
+  @@unique([doctorId, date])
+  @@index([doctorId])
+  @@index([tenantId])
+}
+
+model PurchaseRecord {
+  id            String   @id @default(uuid())
+  medicineId    String
+  batchNumber   String
+  quantity      Int
+  unitCost      Decimal
+  totalCost     Decimal
+  sellerName    String
+  sellerCompany String
+  purchaseDate  DateTime
+  tenantId      String
+  createdAt     DateTime @default(now())
+
+  medicine Medicine @relation(fields: [medicineId], references: [id])
+
+  @@index([medicineId])
+  @@index([tenantId])
+  @@index([purchaseDate])
+  @@index([tenantId, purchaseDate])
+}
+
+// ─── Modified Existing Models ───
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role
+  tenantId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Existing relations
+  tenant               Tenant?  @relation(fields: [tenantId], references: [id])
+  createdPatients      Patient[]
+  doctorPrescriptions  Prescription[] @relation("DoctorPrescriptions")
+  pharmacyOrders       Order[]        @relation("PharmacyOrders")
+  payments             Payment[]
+  notifications        Notification[]
+  sales                Sale[]         @relation("UserSales")
+
+  // New relations
+  doctorConnections    DoctorPharmacyConnection[] @relation("DoctorConnections")
+  pharmacyConnections  DoctorPharmacyConnection[] @relation("PharmacyConnections")
+  allergyReports       AllergyReport[]            @relation("DoctorAllergyReports")
+  doctorAppointments   Appointment[]              @relation("DoctorAppointments")
+  doctorSchedules      DoctorSchedule[]           @relation("DoctorSchedules")
+  blockedDates         BlockedDate[]              @relation("DoctorBlockedDates")
+
+  @@index([tenantId])
+  @@index([tenantId, role])
+}
+
+model Patient {
+  id             String   @id @default(uuid())
+  name           String
+  age            Int
+  gender         Gender
+  medicalHistory String?
+  email          String?
+  mobile         String?
+  createdBy      String
+  tenantId       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  creator        User             @relation(fields: [createdBy], references: [id])
+  prescriptions  Prescription[]
+  allergyReports AllergyReport[]
+  appointments   Appointment[]
+
+  // Indexes
+  @@unique([email, tenantId])
+  @@index([name])
+  @@index([createdBy])
+  @@index([createdAt])
+  @@index([tenantId])
+}
+
+model Medicine {
+  id          String   @id @default(uuid())
+  name        String
+  batchNumber String   @unique
+  expiryDate  DateTime
+  quantity    Int
+  supplier    String
+  category    String?
+  unitPrice   Decimal?
+  tenantId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  prescriptionItems PrescriptionItem[]
+  saleItems         SaleItem[]
+  purchaseRecords   PurchaseRecord[]
+
+  // Indexes
+  @@index([name])
+  @@index([batchNumber])
+  @@index([expiryDate])
+  @@index([supplier])
+  @@index([quantity])
+  @@index([quantity, expiryDate])
+  @@index([createdAt])
+  @@index([tenantId])
+  @@index([tenantId, name])
+}
+
+model Prescription {
+  id               String             @id @default(uuid())
+  patientId        String
+  doctorId         String
+  status           PrescriptionStatus @default(PENDING)
+  tenantId         String?
+  targetPharmacyId String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  patient Patient            @relation(fields: [patientId], references: [id])
+  doctor  User               @relation("DoctorPrescriptions", fields: [doctorId], references: [id])
+  items   PrescriptionItem[]
+  order   Order?
+  sales   Sale[]
+
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([tenantId])
+  @@index([tenantId, status])
+}
+
+model PrescriptionItem {
+  id             String   @id @default(uuid())
+  prescriptionId String
+  medicineId     String
+  quantity       Int
+  dosage         String?
+  frequency      String?
+  duration       String?
+  createdAt      DateTime @default(now())
+
+  prescription Prescription @relation(fields: [prescriptionId], references: [id])
+  medicine     Medicine     @relation(fields: [medicineId], references: [id])
+
+  @@index([prescriptionId])
+  @@index([medicineId])
+}
+
+model Order {
+  id             String      @id @default(uuid())
+  prescriptionId String      @unique
+  pharmacyId     String
+  status         OrderStatus @default(PENDING)
+  trackingInfo   String?
+  tenantId       String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  prescription Prescription @relation(fields: [prescriptionId], references: [id])
+  pharmacy     User         @relation("PharmacyOrders", fields: [pharmacyId], references: [id])
+  payments     Payment[]
+
+  @@index([pharmacyId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([tenantId])
+}
+
+model Payment {
+  id                    String        @id @default(uuid())
+  stripePaymentIntentId String        @unique
+  amount                Int
+  currency              String
+  status                PaymentStatus @default(PENDING)
+  paymentType           PaymentType
+  orderId               String?
+  userId                String
+  tenantId              String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  order Order? @relation(fields: [orderId], references: [id])
+  user  User   @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([orderId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([tenantId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  message   String
+  isRead    Boolean  @default(false)
+  tenantId  String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@index([createdAt])
+  @@index([tenantId])
+}
+
+model Sale {
+  id             String            @id @default(uuid())
+  customerName   String
+  prescriptionId String?
+  paymentMethod  SalePaymentMethod
+  discountType   DiscountType      @default(FLAT)
+  subtotal       Decimal
+  discount       Decimal           @default(0)
+  tax            Decimal           @default(0)
+  finalAmount    Decimal
+  createdBy      String?
+  tenantId       String?
+  createdAt      DateTime          @default(now())
+
+  // Relations
+  prescription Prescription? @relation(fields: [prescriptionId], references: [id])
+  creator      User?         @relation("UserSales", fields: [createdBy], references: [id])
+  items        SaleItem[]
+
+  // Indexes
+  @@index([createdAt])
+  @@index([createdBy])
+  @@index([prescriptionId])
+  @@index([paymentMethod])
+  @@index([createdAt, paymentMethod])
+  @@index([tenantId])
+  @@index([tenantId, createdAt])
+}
+
+model SaleItem {
+  id           String   @id @default(uuid())
+  saleId       String
+  medicineId   String
+  batchNumber  String
+  quantity     Int
+  pricePerUnit Decimal
+  totalPrice   Decimal
+  tenantId     String?
+  createdAt    DateTime @default(now())
+
+  // Relations
+  sale     Sale     @relation(fields: [saleId], references: [id])
+  medicine Medicine @relation(fields: [medicineId], references: [id])
+
+  // Indexes
+  @@index([saleId])
+  @@index([medicineId])
+  @@index([tenantId])
+}

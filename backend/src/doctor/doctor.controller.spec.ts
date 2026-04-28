@@ -24,6 +24,7 @@ describe('DoctorController', () => {
     blockDate: jest.fn(),
     unblockDate: jest.fn(),
     setMaxAppointments: jest.fn(),
+    cancelAppointment: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -309,6 +310,22 @@ describe('DoctorController', () => {
       expect(result).toEqual(expected);
       expect(mockDoctorService.setMaxAppointments).toHaveBeenCalledWith(
         dto,
+        'doctor-1',
+        'tenant-1',
+      );
+    });
+  });
+
+  describe('cancelAppointment', () => {
+    it('should call service with appointmentId, doctorId, and tenantId', async () => {
+      const expected = { message: 'Appointment cancelled successfully' };
+      mockDoctorService.cancelAppointment.mockResolvedValue(expected);
+
+      const result = await controller.cancelAppointment('appointment-1', mockReq);
+
+      expect(result).toEqual(expected);
+      expect(mockDoctorService.cancelAppointment).toHaveBeenCalledWith(
+        'appointment-1',
         'doctor-1',
         'tenant-1',
       );

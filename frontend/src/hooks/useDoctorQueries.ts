@@ -198,6 +198,13 @@ export interface SetAvailabilityInput {
   slots: Record<string, TimeSlot[]>;
 }
 
+export function useGetSchedule() {
+  return useQuery({
+    queryKey: ['doctor', 'schedule'],
+    queryFn: () => fetchJson<{ slots: Array<{ dayOfWeek: string; startTime: string; endTime: string }>; blockedDates: string[]; maxPerDay: number }>('/doctor/schedule'),
+  });
+}
+
 export function useSetAvailability() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -251,6 +258,41 @@ export function useSetMaxAppointments() {
       mutateJson('/doctor/schedule/max-appointments', 'PUT', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['doctor', 'schedule'] });
+    },
+  });
+}
+
+// ── Doctor Appointment mutation hooks ──
+
+export function useDoctorCancelAppointment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (appointmentId: string) =>
+      mutateJson(`/doctor/appointments/${appointmentId}`, 'DELETE'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doctor', 'appointments'] });
+    },
+  });
+}
+
+export function useDoctorRescheduleAppointment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ appointmentId, data }: { appointmentId: string; data: { newDate: string; newTimeSlot: string } }) =>
+      mutateJson(`/doctor/appointments/${appointmentId}/reschedule`, 'PATCH', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doctor', 'appointments'] });
+    },
+  });
+}
+
+export function useCompleteAppointment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (appointmentId: string) =>
+      mutateJson(`/doctor/appointments/${appointmentId}/complete`, 'PATCH'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['doctor', 'appointments'] });
     },
   });
 }

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppointmentQueryDto = exports.SetMaxAppointmentsDto = exports.BlockDateDto = exports.AvailabilitySlotDto = exports.SetAvailabilityDto = exports.RequestConnectionDto = exports.PrescriptionItemDto = exports.CreatePrescriptionDto = exports.CreateAllergyReportDto = exports.PatientQueryDto = exports.CreatePatientDto = void 0;
+exports.RescheduleDto = exports.AppointmentQueryDto = exports.SetMaxAppointmentsDto = exports.BlockDateDto = exports.AvailabilitySlotDto = exports.SetAvailabilityDto = exports.RequestConnectionDto = exports.PrescriptionItemDto = exports.CreatePrescriptionDto = exports.CreateAllergyReportDto = exports.PatientQueryDto = exports.CreatePatientDto = void 0;
 var create_patient_dto_1 = require("./create-patient.dto");
 Object.defineProperty(exports, "CreatePatientDto", { enumerable: true, get: function () { return create_patient_dto_1.CreatePatientDto; } });
 var patient_query_dto_1 = require("./patient-query.dto");
@@ -21,4 +21,6 @@ var set_max_appointments_dto_1 = require("./set-max-appointments.dto");
 Object.defineProperty(exports, "SetMaxAppointmentsDto", { enumerable: true, get: function () { return set_max_appointments_dto_1.SetMaxAppointmentsDto; } });
 var appointment_query_dto_1 = require("./appointment-query.dto");
 Object.defineProperty(exports, "AppointmentQueryDto", { enumerable: true, get: function () { return appointment_query_dto_1.AppointmentQueryDto; } });
+var reschedule_dto_1 = require("../../patient/dto/reschedule.dto");
+Object.defineProperty(exports, "RescheduleDto", { enumerable: true, get: function () { return reschedule_dto_1.RescheduleDto; } });
 //# sourceMappingURL=index.js.map

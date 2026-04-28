@@ -94,6 +94,18 @@ export function useCancelAppointment() {
   });
 }
 
+export function useRescheduleAppointment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ appointmentId, data }: { appointmentId: string; data: { newDate: string; newTimeSlot: string } }) =>
+      mutateJson(`/patient/appointments/${appointmentId}/reschedule`, 'PATCH', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patient', 'appointments'] });
+      queryClient.invalidateQueries({ queryKey: ['patient', 'slots'] });
+    },
+  });
+}
+
 export interface PatientAppointmentFilters {
   status?: string;
   startDate?: string;

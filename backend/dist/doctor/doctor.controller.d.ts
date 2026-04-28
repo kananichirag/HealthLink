@@ -1,5 +1,5 @@
 import { DoctorService } from './doctor.service';
-import { CreatePatientDto, PatientQueryDto, CreateAllergyReportDto, CreatePrescriptionDto, RequestConnectionDto, SetAvailabilityDto, BlockDateDto, SetMaxAppointmentsDto, AppointmentQueryDto } from './dto';
+import { CreatePatientDto, PatientQueryDto, CreateAllergyReportDto, CreatePrescriptionDto, RequestConnectionDto, SetAvailabilityDto, BlockDateDto, SetMaxAppointmentsDto, AppointmentQueryDto, RescheduleDto } from './dto';
 export declare class DoctorController {
     private readonly doctorService;
     constructor(doctorService: DoctorService);
@@ -25,6 +25,11 @@ export declare class DoctorController {
         page: number;
         limit: number;
     }>;
+    getSchedule(req: any): Promise<{
+        slots: any;
+        blockedDates: any;
+        maxPerDay: number;
+    }>;
     setAvailability(dto: SetAvailabilityDto, req: any): Promise<any[]>;
     blockDate(dto: BlockDateDto, req: any): Promise<any>;
     unblockDate(date: string, req: any): Promise<{
@@ -35,4 +40,9 @@ export declare class DoctorController {
         maxPerDay: number;
         tenantId: string;
     }>;
+    cancelAppointment(id: string, req: any): Promise<{
+        message: string;
+    }>;
+    rescheduleAppointment(id: string, dto: RescheduleDto, req: any): Promise<any>;
+    completeAppointment(id: string, req: any): Promise<any>;
 }

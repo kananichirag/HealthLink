@@ -119,9 +119,21 @@ let PatientPortalService = PatientPortalService_1 = class PatientPortalService {
             select: { timeSlot: true },
         });
         const bookedSlots = new Set(bookedAppointments.map((a) => a.timeSlot));
-        const availableSlots = schedules
-            .map((s) => `${s.startTime}-${s.endTime}`)
-            .filter((slot) => !bookedSlots.has(slot));
+        const availableSlots = [];
+        for (const schedule of schedules) {
+            const [startH, startM] = schedule.startTime.split(':').map(Number);
+            const [endH, endM] = schedule.endTime.split(':').map(Number);
+            const startMinutes = startH * 60 + startM;
+            const endMinutes = endH * 60 + endM;
+            for (let t = startMinutes; t + 30 <= endMinutes; t += 30) {
+                const slotStart = `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+                const slotEnd = `${String(Math.floor((t + 30) / 60)).padStart(2, '0')}:${String((t + 30) % 60).padStart(2, '0')}`;
+                const slotKey = `${slotStart}-${slotEnd}`;
+                if (!bookedSlots.has(slotKey)) {
+                    availableSlots.push(slotKey);
+                }
+            }
+        }
         return { date, dayOfWeek, slots: availableSlots };
     }
     async bookAppointment(dto, userId) {
@@ -141,16 +153,13 @@ let PatientPortalService = PatientPortalService_1 = class PatientPortalService {
             throw new common_1.ConflictException('This date is blocked by the doctor');
         }
         const [slotStart, slotEnd] = timeSlot.split('-');
-        const scheduleSlot = await this.prisma.doctorSchedule.findFirst({
-            where: {
-                doctorId,
-                dayOfWeek,
-                startTime: slotStart,
-                endTime: slotEnd,
-            },
+        const schedules = await this.prisma.doctorSchedule.findMany({
+            where: { doctorId, dayOfWeek },
+            select: { startTime: true, endTime: true },
         });
-        if (!scheduleSlot) {
-            throw new common_1.BadRequestException('This time slot is not in the doctor\'s schedule');
+        const slotFitsSchedule = schedules.some((s) => slotStart >= s.startTime && slotEnd <= s.endTime);
+        if (!slotFitsSchedule) {
+            throw new common_1.BadRequestException("This time slot is not in the doctor's schedule");
         }
         const startOfDay = new Date(appointmentDate);
         startOfDay.setHours(0, 0, 0, 0);

@@ -61,6 +61,9 @@ let DoctorController = class DoctorController {
     async listAppointments(query, req) {
         return this.doctorService.listAppointments(query, req.user.sub, req.user.tenantId);
     }
+    async getSchedule(req) {
+        return this.doctorService.getSchedule(req.user.sub, req.user.tenantId);
+    }
     async setAvailability(dto, req) {
         return this.doctorService.setAvailability(dto, req.user.sub, req.user.tenantId);
     }
@@ -72,6 +75,15 @@ let DoctorController = class DoctorController {
     }
     async setMaxAppointments(dto, req) {
         return this.doctorService.setMaxAppointments(dto, req.user.sub, req.user.tenantId);
+    }
+    async cancelAppointment(id, req) {
+        return this.doctorService.cancelAppointment(id, req.user.sub, req.user.tenantId);
+    }
+    async rescheduleAppointment(id, dto, req) {
+        return this.doctorService.rescheduleAppointment(id, req.user.sub, req.user.tenantId, dto.newDate, dto.newTimeSlot);
+    }
+    async completeAppointment(id, req) {
+        return this.doctorService.completeAppointment(id, req.user.sub, req.user.tenantId);
     }
 };
 exports.DoctorController = DoctorController;
@@ -177,6 +189,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], DoctorController.prototype, "listAppointments", null);
 __decorate([
+    (0, common_1.Get)('schedule'),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], DoctorController.prototype, "getSchedule", null);
+__decorate([
     (0, common_1.Put)('schedule'),
     __param(0, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
     __param(1, (0, common_1.Request)()),
@@ -209,6 +228,34 @@ __decorate([
     __metadata("design:paramtypes", [dto_1.SetMaxAppointmentsDto, Object]),
     __metadata("design:returntype", Promise)
 ], DoctorController.prototype, "setMaxAppointments", null);
+__decorate([
+    (0, common_1.Delete)('appointments/:id'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], DoctorController.prototype, "cancelAppointment", null);
+__decorate([
+    (0, common_1.Patch)('appointments/:id/reschedule'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
+    __param(2, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, dto_1.RescheduleDto, Object]),
+    __metadata("design:returntype", Promise)
+], DoctorController.prototype, "rescheduleAppointment", null);
+__decorate([
+    (0, common_1.Patch)('appointments/:id/complete'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], DoctorController.prototype, "completeAppointment", null);
 exports.DoctorController = DoctorController = __decorate([
     (0, common_1.Controller)('doctor'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

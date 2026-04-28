@@ -15,7 +15,7 @@ export declare class PatientPortalService {
     getAvailableSlots(doctorId: string, date: string): Promise<{
         date: string;
         dayOfWeek: import("@prisma/client").$Enums.DayOfWeek;
-        slots: any;
+        slots: string[];
     }>;
     bookAppointment(dto: BookAppointmentDto, userId: string): Promise<any>;
     cancelAppointment(appointmentId: string, userId: string): Promise<any>;

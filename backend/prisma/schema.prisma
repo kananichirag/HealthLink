@@ -148,15 +148,17 @@ model AllergyReport {
 }
 
 model Appointment {
-  id        String            @id @default(uuid())
-  patientId String
-  doctorId  String
-  date      DateTime
-  timeSlot  String
-  status    AppointmentStatus @default(SCHEDULED)
-  tenantId  String
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
+  id            String            @id @default(uuid())
+  patientId     String
+  doctorId      String
+  date          DateTime
+  timeSlot      String
+  status        AppointmentStatus @default(SCHEDULED)
+  isRescheduled Boolean           @default(false)
+  tags          String[]          @default([])
+  tenantId      String
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 
   patient Patient @relation(fields: [patientId], references: [id])
   doctor  User    @relation("DoctorAppointments", fields: [doctorId], references: [id])
@@ -166,6 +168,7 @@ model Appointment {
   @@index([doctorId, date])
   @@index([tenantId])
   @@index([status])
+  @@index([isRescheduled])
 }
 
 model DoctorSchedule {

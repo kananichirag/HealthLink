@@ -26,6 +26,7 @@ const notifications_module_1 = require("./notifications/notifications.module");
 const sales_module_1 = require("./sales/sales.module");
 const tenant_module_1 = require("./tenant/tenant.module");
 const doctor_module_1 = require("./doctor/doctor.module");
+const patient_module_1 = require("./patient/patient.module");
 const patient_portal_module_1 = require("./patient-portal/patient-portal.module");
 const pharmacy_module_1 = require("./pharmacy/pharmacy.module");
 const admin_module_1 = require("./admin/admin.module");
@@ -58,6 +59,7 @@ exports.AppModule = AppModule = __decorate([
             notifications_module_1.NotificationsModule,
             sales_module_1.SalesModule,
             doctor_module_1.DoctorModule,
+            patient_module_1.PatientModule,
             patient_portal_module_1.PatientPortalModule,
             pharmacy_module_1.PharmacyModule,
             admin_module_1.AdminModule,

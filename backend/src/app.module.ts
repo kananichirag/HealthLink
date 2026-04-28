@@ -17,6 +17,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { SalesModule } from './sales/sales.module';
 import { TenantModule } from './tenant/tenant.module';
 import { DoctorModule } from './doctor/doctor.module';
+import { PatientModule } from './patient/patient.module';
 import { PatientPortalModule } from './patient-portal/patient-portal.module';
 import { PharmacyModule } from './pharmacy/pharmacy.module';
 import { AdminModule } from './admin/admin.module';
@@ -43,6 +44,7 @@ import { TenantContextMiddleware } from './tenant/tenant-context.middleware';
     NotificationsModule,
     SalesModule,
     DoctorModule,
+    PatientModule,
     PatientPortalModule,
     PharmacyModule,
     AdminModule,

@@ -45,6 +45,8 @@ describe('DoctorService', () => {
     appointment: {
       count: jest.fn(),
       findMany: jest.fn(),
+      findFirst: jest.fn(),
+      update: jest.fn(),
     },
     doctorSchedule: {
       deleteMany: jest.fn(),
@@ -684,8 +686,22 @@ describe('DoctorService', () => {
 
     it('should return appointments sorted by date asc', async () => {
       const appointments = [
-        { id: 'apt-1', date: new Date('2024-01-01'), status: 'SCHEDULED', patient: { id: 'p1', name: 'A' } },
-        { id: 'apt-2', date: new Date('2024-01-02'), status: 'SCHEDULED', patient: { id: 'p2', name: 'B' } },
+        { 
+          id: 'apt-1', 
+          date: new Date('2024-01-01'), 
+          status: 'SCHEDULED', 
+          isRescheduled: false,
+          tags: [],
+          patient: { id: 'p1', name: 'A' } 
+        },
+        { 
+          id: 'apt-2', 
+          date: new Date('2024-01-02'), 
+          status: 'SCHEDULED', 
+          isRescheduled: false,
+          tags: [],
+          patient: { id: 'p2', name: 'B' } 
+        },
       ];
       mockPrismaService.appointment.count.mockResolvedValue(2);
       mockPrismaService.appointment.findMany.mockResolvedValue(appointments);
@@ -698,8 +714,167 @@ describe('DoctorService', () => {
         expect.objectContaining({
           orderBy: { date: 'asc' },
           where: { doctorId, tenantId },
+          select: expect.objectContaining({
+            id: true,
+            patientId: true,
+            doctorId: true,
+            date: true,
+            timeSlot: true,
+            status: true,
+            isRescheduled: true,
+            tags: true,
+            tenantId: true,
+            createdAt: true,
+            updatedAt: true,
+            patient: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          }),
         }),
       );
+    });
+
+    it('should include overdue indicator in appointment responses', async () => {
+      const pastDate = new Date();
+      pastDate.setDate(pastDate.getDate() - 1); // Yesterday
+      
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 1); // Tomorrow
+      
+      const appointments = [
+        { 
+          id: 'apt-1', 
+          date: pastDate, 
+          timeSlot: '10:00 AM',
+          status: 'SCHEDULED',
+          isRescheduled: false,
+          tags: [],
+          patient: { id: 'p1', name: 'Patient A' } 
+        },
+        { 
+          id: 'apt-2', 
+          date: futureDate, 
+          timeSlot: '2:00 PM',
+          status: 'SCHEDULED',
+          isRescheduled: false,
+          tags: [],
+          patient: { id: 'p2', name: 'Patient B' } 
+        },
+        { 
+          id: 'apt-3', 
+          date: pastDate, 
+          timeSlot: '3:00 PM',
+          status: 'COMPLETED',
+          isRescheduled: true,
+          tags: ['Rescheduled'],
+          patient: { id: 'p3', name: 'Patient C' } 
+        },
+      ];
+      
+      mockPrismaService.appointment.count.mockResolvedValue(3);
+      mockPrismaService.appointment.findMany.mockResolvedValue(appointments);
+
+      const result = await service.listAppointments({}, doctorId, tenantId);
+
+      expect(result.data).toHaveLength(3);
+      
+      // Past SCHEDULED appointment should be overdue
+      expect(result.data[0].isOverdue).toBe(true);
+      
+      // Future SCHEDULED appointment should not be overdue
+      expect(result.data[1].isOverdue).toBe(false);
+      
+      // Past COMPLETED appointment should not be overdue (only SCHEDULED can be overdue)
+      expect(result.data[2].isOverdue).toBe(false);
+    });
+
+    it('should handle different time formats in overdue detection', async () => {
+      const pastDate = new Date();
+      pastDate.setDate(pastDate.getDate() - 1); // Yesterday
+      
+      const appointments = [
+        { 
+          id: 'apt-1', 
+          date: pastDate, 
+          timeSlot: '14:00', // 24-hour format
+          status: 'SCHEDULED',
+          isRescheduled: false,
+          tags: [],
+          patient: { id: 'p1', name: 'Patient A' } 
+        },
+        { 
+          id: 'apt-2', 
+          date: pastDate, 
+          timeSlot: '2:00 PM', // AM/PM format
+          status: 'SCHEDULED',
+          isRescheduled: true,
+          tags: ['Rescheduled'],
+          patient: { id: 'p2', name: 'Patient B' } 
+        },
+        { 
+          id: 'apt-3', 
+          date: pastDate, 
+          timeSlot: null, // Invalid timeSlot
+          status: 'SCHEDULED',
+          isRescheduled: false,
+          tags: [],
+          patient: { id: 'p3', name: 'Patient C' } 
+        },
+      ];
+      
+      mockPrismaService.appointment.count.mockResolvedValue(3);
+      mockPrismaService.appointment.findMany.mockResolvedValue(appointments);
+
+      const result = await service.listAppointments({}, doctorId, tenantId);
+
+      expect(result.data).toHaveLength(3);
+      
+      // Both valid time formats should be detected as overdue
+      expect(result.data[0].isOverdue).toBe(true);
+      expect(result.data[1].isOverdue).toBe(true);
+      
+      // Invalid timeSlot should not be overdue (safety check)
+      expect(result.data[2].isOverdue).toBe(false);
+    });
+
+    it('should include isRescheduled and tags fields in response', async () => {
+      const appointments = [
+        { 
+          id: 'apt-1', 
+          date: new Date('2024-01-01'), 
+          timeSlot: '10:00 AM',
+          status: 'SCHEDULED',
+          isRescheduled: true,
+          tags: ['Rescheduled'],
+          patient: { id: 'p1', name: 'Patient A' } 
+        },
+        { 
+          id: 'apt-2', 
+          date: new Date('2024-01-02'), 
+          timeSlot: '2:00 PM',
+          status: 'SCHEDULED',
+          isRescheduled: false,
+          tags: [],
+          patient: { id: 'p2', name: 'Patient B' } 
+        },
+      ];
+      mockPrismaService.appointment.count.mockResolvedValue(2);
+      mockPrismaService.appointment.findMany.mockResolvedValue(appointments);
+
+      const result = await service.listAppointments({}, doctorId, tenantId);
+
+      expect(result.data).toHaveLength(2);
+      
+      // Check first appointment has rescheduled flag and tag
+      expect(result.data[0].isRescheduled).toBe(true);
+      expect(result.data[0].tags).toEqual(['Rescheduled']);
+      
+      // Check second appointment has default values
+      expect(result.data[1].isRescheduled).toBe(false);
+      expect(result.data[1].tags).toEqual([]);
     });
 
     it('should filter by status', async () => {
@@ -878,6 +1053,68 @@ describe('DoctorService', () => {
       expect(result.doctorId).toBe(doctorId);
       expect(result.maxPerDay).toBe(20);
       expect(result.tenantId).toBe(tenantId);
+    });
+  });
+
+  describe('cancelAppointment', () => {
+    const tenantId = 'tenant-1';
+    const doctorId = 'doctor-1';
+    const appointmentId = 'appointment-1';
+
+    it('should cancel appointment successfully', async () => {
+      const mockAppointment = {
+        id: appointmentId,
+        doctorId,
+        tenantId,
+        status: 'SCHEDULED',
+        patient: { id: 'patient-1', name: 'John Doe' },
+      };
+
+      mockPrismaService.appointment.findFirst.mockResolvedValue(mockAppointment);
+      mockPrismaService.appointment.update.mockResolvedValue({
+        ...mockAppointment,
+        status: 'CANCELLED',
+      });
+
+      const result = await service.cancelAppointment(
+        appointmentId,
+        doctorId,
+        tenantId,
+      );
+
+      expect(result.message).toBe('Appointment cancelled successfully');
+      expect(mockPrismaService.appointment.findFirst).toHaveBeenCalledWith({
+        where: { id: appointmentId, doctorId, tenantId },
+        include: { patient: { select: { id: true, name: true } } },
+      });
+      expect(mockPrismaService.appointment.update).toHaveBeenCalledWith({
+        where: { id: appointmentId },
+        data: { status: 'CANCELLED', updatedAt: expect.any(Date) },
+      });
+    });
+
+    it('should throw NotFoundException if appointment not found', async () => {
+      mockPrismaService.appointment.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.cancelAppointment(appointmentId, doctorId, tenantId),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('should throw BadRequestException if appointment is already cancelled', async () => {
+      const mockAppointment = {
+        id: appointmentId,
+        doctorId,
+        tenantId,
+        status: 'CANCELLED',
+        patient: { id: 'patient-1', name: 'John Doe' },
+      };
+
+      mockPrismaService.appointment.findFirst.mockResolvedValue(mockAppointment);
+
+      await expect(
+        service.cancelAppointment(appointmentId, doctorId, tenantId),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

@@ -258,7 +258,9 @@ let DoctorService = DoctorService_1 = class DoctorService {
     async listAppointments(query, doctorId, tenantId) {
         const { status, startDate, endDate, page = 1, limit = 10 } = query;
         const skip = (page - 1) * limit;
-        const where = { doctorId, tenantId };
+        const where = tenantId
+            ? { doctorId, tenantId }
+            : { doctorId };
         if (status) {
             where.status = status;
         }
@@ -278,12 +280,48 @@ let DoctorService = DoctorService_1 = class DoctorService {
                 skip,
                 take: limit,
                 orderBy: { date: 'asc' },
-                include: {
-                    patient: { select: { id: true, name: true } },
+                select: {
+                    id: true,
+                    patientId: true,
+                    doctorId: true,
+                    date: true,
+                    timeSlot: true,
+                    status: true,
+                    isRescheduled: true,
+                    tags: true,
+                    tenantId: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    patient: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
                 },
             }),
         ]);
-        return { data: appointments, total, page, limit };
+        const enrichedAppointments = appointments.map(appointment => ({
+            ...appointment,
+            isOverdue: this.isAppointmentOverdue(appointment),
+        }));
+        return { data: enrichedAppointments, total, page, limit };
+    }
+    async getSchedule(doctorId, tenantId) {
+        const schedules = await this.prisma.doctorSchedule.findMany({
+            where: { doctorId },
+            select: { dayOfWeek: true, startTime: true, endTime: true },
+            orderBy: { dayOfWeek: 'asc' },
+        });
+        const blockedDates = await this.prisma.blockedDate.findMany({
+            where: { doctorId },
+            select: { date: true },
+        });
+        return {
+            slots: schedules,
+            blockedDates: blockedDates.map((b) => b.date.toISOString().split('T')[0]),
+            maxPerDay: 20,
+        };
     }
     async setAvailability(dto, doctorId, tenantId) {
         this.logger.log(`Setting availability for doctor: ${doctorId}`);
@@ -344,6 +382,196 @@ let DoctorService = DoctorService_1 = class DoctorService {
     async setMaxAppointments(dto, doctorId, tenantId) {
         this.logger.log(`Setting max appointments per day to ${dto.maxPerDay} for doctor: ${doctorId}`);
         return { doctorId, maxPerDay: dto.maxPerDay, tenantId };
+    }
+    async cancelAppointment(appointmentId, doctorId, tenantId) {
+        this.logger.log(`Doctor ${doctorId} cancelling appointment ${appointmentId}`);
+        const appointment = await this.prisma.appointment.findFirst({
+            where: {
+                id: appointmentId,
+                doctorId,
+                tenantId
+            },
+            include: {
+                patient: { select: { id: true, name: true } },
+            },
+        });
+        if (!appointment) {
+            throw new common_1.NotFoundException('Appointment not found');
+        }
+        if (appointment.status === 'CANCELLED') {
+            throw new common_1.BadRequestException('Appointment is already cancelled');
+        }
+        await this.prisma.appointment.update({
+            where: { id: appointmentId },
+            data: {
+                status: 'CANCELLED',
+                updatedAt: new Date(),
+            },
+        });
+        this.logger.log(`Appointment ${appointmentId} cancelled successfully by doctor ${doctorId}`);
+        return { message: 'Appointment cancelled successfully' };
+    }
+    async rescheduleAppointment(appointmentId, doctorId, tenantId, newDate, newTimeSlot) {
+        this.logger.log(`Doctor ${doctorId} attempting to reschedule appointment ${appointmentId}`);
+        const appointment = await this.prisma.appointment.findFirst({
+            where: {
+                id: appointmentId,
+                doctorId,
+                tenantId
+            },
+            include: {
+                patient: { select: { id: true, name: true } },
+            },
+        });
+        if (!appointment) {
+            throw new common_1.NotFoundException('Appointment not found');
+        }
+        if (appointment.status !== 'SCHEDULED') {
+            throw new common_1.BadRequestException('Only scheduled appointments can be rescheduled');
+        }
+        const newAppointmentDate = new Date(newDate);
+        const isAvailable = await this.checkSlotAvailability(doctorId, newAppointmentDate, newTimeSlot, tenantId, appointmentId);
+        if (!isAvailable) {
+            throw new common_1.BadRequestException('The selected time slot is no longer available');
+        }
+        let updatedAppointment = await this.prisma.appointment.update({
+            where: { id: appointmentId },
+            data: {
+                date: newAppointmentDate,
+                timeSlot: newTimeSlot,
+                isRescheduled: true,
+                updatedAt: new Date(),
+            },
+            include: {
+                doctor: { select: { id: true, name: true } },
+                patient: { select: { id: true, name: true } },
+            },
+        });
+        const taggedAppointment = await this.addRescheduledTag(appointmentId);
+        updatedAppointment = {
+            ...updatedAppointment,
+            tags: taggedAppointment.tags || updatedAppointment.tags,
+            isOverdue: this.isAppointmentOverdue(updatedAppointment),
+        };
+        this.logger.log(`Appointment ${appointmentId} rescheduled successfully by doctor ${doctorId}`);
+        return updatedAppointment;
+    }
+    isAppointmentOverdue(appointment) {
+        if (appointment.status !== 'SCHEDULED') {
+            return false;
+        }
+        if (!appointment.date || !appointment.timeSlot) {
+            return false;
+        }
+        const appointmentDateTime = this.combineDateTime(appointment.date, appointment.timeSlot);
+        const now = new Date();
+        return appointmentDateTime < now;
+    }
+    combineDateTime(date, timeSlot) {
+        if (!date || !timeSlot) {
+            return new Date();
+        }
+        const appointmentDate = new Date(date);
+        let hours;
+        let minutes;
+        if (timeSlot.includes('AM') || timeSlot.includes('PM')) {
+            const [time, period] = timeSlot.split(' ');
+            const [hourStr, minuteStr] = time.split(':');
+            hours = parseInt(hourStr, 10);
+            minutes = parseInt(minuteStr, 10);
+            if (period === 'PM' && hours !== 12) {
+                hours += 12;
+            }
+            else if (period === 'AM' && hours === 12) {
+                hours = 0;
+            }
+        }
+        else {
+            const [hourStr, minuteStr] = timeSlot.split(':');
+            hours = parseInt(hourStr, 10);
+            minutes = parseInt(minuteStr, 10);
+        }
+        if (isNaN(hours) || isNaN(minutes)) {
+            return new Date();
+        }
+        appointmentDate.setHours(hours, minutes, 0, 0);
+        return appointmentDate;
+    }
+    async checkSlotAvailability(doctorId, date, timeSlot, tenantId, excludeAppointmentId) {
+        const whereClause = {
+            doctorId,
+            date,
+            timeSlot,
+            status: 'SCHEDULED',
+            tenantId,
+        };
+        if (excludeAppointmentId) {
+            whereClause.id = { not: excludeAppointmentId };
+        }
+        const conflictingAppointment = await this.prisma.appointment.findFirst({
+            where: whereClause,
+        });
+        return !conflictingAppointment;
+    }
+    async addRescheduledTag(appointmentId) {
+        const appointment = await this.prisma.appointment.findUnique({
+            where: { id: appointmentId },
+            select: { tags: true },
+        });
+        if (!appointment) {
+            throw new common_1.NotFoundException('Appointment not found');
+        }
+        const tags = appointment.tags || [];
+        if (!tags.includes('Rescheduled')) {
+            return await this.prisma.appointment.update({
+                where: { id: appointmentId },
+                data: {
+                    tags: {
+                        push: 'Rescheduled',
+                    },
+                },
+            });
+        }
+        return appointment;
+    }
+    async completeAppointment(appointmentId, doctorId, tenantId) {
+        this.logger.log(`Doctor ${doctorId} completing appointment ${appointmentId}`);
+        const appointment = await this.prisma.appointment.findFirst({
+            where: {
+                id: appointmentId,
+                doctorId,
+                tenantId
+            },
+            include: {
+                patient: { select: { id: true, name: true } },
+            },
+        });
+        if (!appointment) {
+            throw new common_1.NotFoundException('Appointment not found');
+        }
+        if (appointment.status === 'COMPLETED') {
+            throw new common_1.BadRequestException('Appointment is already completed');
+        }
+        if (appointment.status === 'CANCELLED') {
+            throw new common_1.BadRequestException('Cannot complete a cancelled appointment');
+        }
+        const updatedAppointment = await this.prisma.appointment.update({
+            where: { id: appointmentId },
+            data: {
+                status: 'COMPLETED',
+                updatedAt: new Date(),
+            },
+            include: {
+                patient: { select: { id: true, name: true } },
+                doctor: { select: { id: true, name: true } },
+            },
+        });
+        const enrichedAppointment = {
+            ...updatedAppointment,
+            isOverdue: this.isAppointmentOverdue(updatedAppointment),
+        };
+        this.logger.log(`Appointment ${appointmentId} completed successfully by doctor ${doctorId}`);
+        return enrichedAppointment;
     }
 };
 exports.DoctorService = DoctorService;

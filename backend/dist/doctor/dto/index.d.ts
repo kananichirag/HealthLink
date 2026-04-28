@@ -7,3 +7,4 @@ export { SetAvailabilityDto, AvailabilitySlotDto } from './set-availability.dto'
 export { BlockDateDto } from './block-date.dto';
 export { SetMaxAppointmentsDto } from './set-max-appointments.dto';
 export { AppointmentQueryDto } from './appointment-query.dto';
+export { RescheduleDto } from '../../patient/dto/reschedule.dto';

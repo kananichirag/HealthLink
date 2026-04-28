@@ -29,6 +29,7 @@ import {
   BlockDateDto,
   SetMaxAppointmentsDto,
   AppointmentQueryDto,
+  RescheduleDto,
 } from './dto';
 
 @Controller('doctor')
@@ -168,6 +169,11 @@ export class DoctorController {
     );
   }
 
+  @Get('schedule')
+  async getSchedule(@Request() req: any) {
+    return this.doctorService.getSchedule(req.user.sub, req.user.tenantId);
+  }
+
   @Put('schedule')
   async setAvailability(
     @Body(new ValidationPipe({ whitelist: true, transform: true }))
@@ -215,6 +221,49 @@ export class DoctorController {
   ) {
     return this.doctorService.setMaxAppointments(
       dto,
+      req.user.sub,
+      req.user.tenantId,
+    );
+  }
+
+  @Delete('appointments/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async cancelAppointment(
+    @Param('id') id: string,
+    @Request() req: any,
+  ) {
+    return this.doctorService.cancelAppointment(
+      id,
+      req.user.sub,
+      req.user.tenantId,
+    );
+  }
+
+  @Patch('appointments/:id/reschedule')
+  @HttpCode(HttpStatus.OK)
+  async rescheduleAppointment(
+    @Param('id') id: string,
+    @Body(new ValidationPipe({ whitelist: true, transform: true }))
+    dto: RescheduleDto,
+    @Request() req: any,
+  ) {
+    return this.doctorService.rescheduleAppointment(
+      id,
+      req.user.sub,
+      req.user.tenantId,
+      dto.newDate,
+      dto.newTimeSlot,
+    );
+  }
+
+  @Patch('appointments/:id/complete')
+  @HttpCode(HttpStatus.OK)
+  async completeAppointment(
+    @Param('id') id: string,
+    @Request() req: any,
+  ) {
+    return this.doctorService.completeAppointment(
+      id,
       req.user.sub,
       req.user.tenantId,
     );

@@ -28,6 +28,11 @@ export declare class DoctorService {
         page: number;
         limit: number;
     }>;
+    getSchedule(doctorId: string, tenantId: string): Promise<{
+        slots: any;
+        blockedDates: any;
+        maxPerDay: number;
+    }>;
     setAvailability(dto: SetAvailabilityDto, doctorId: string, tenantId: string): Promise<any[]>;
     blockDate(dto: BlockDateDto, doctorId: string, tenantId: string): Promise<any>;
     unblockDate(date: string, doctorId: string, tenantId: string): Promise<{
@@ -38,4 +43,13 @@ export declare class DoctorService {
         maxPerDay: number;
         tenantId: string;
     }>;
+    cancelAppointment(appointmentId: string, doctorId: string, tenantId: string): Promise<{
+        message: string;
+    }>;
+    rescheduleAppointment(appointmentId: string, doctorId: string, tenantId: string, newDate: string, newTimeSlot: string): Promise<any>;
+    private isAppointmentOverdue;
+    private combineDateTime;
+    private checkSlotAvailability;
+    private addRescheduledTag;
+    completeAppointment(appointmentId: string, doctorId: string, tenantId: string): Promise<any>;
 }

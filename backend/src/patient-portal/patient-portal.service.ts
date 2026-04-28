@@ -164,10 +164,23 @@ export class PatientPortalService {
 
     const bookedSlots = new Set(bookedAppointments.map((a) => a.timeSlot));
 
-    // Filter out booked slots
-    const availableSlots = schedules
-      .map((s) => `${s.startTime}-${s.endTime}`)
-      .filter((slot) => !bookedSlots.has(slot));
+    // Generate 30-minute slots from each schedule range, filtering out booked ones
+    const availableSlots: string[] = [];
+    for (const schedule of schedules) {
+      const [startH, startM] = schedule.startTime.split(':').map(Number);
+      const [endH, endM] = schedule.endTime.split(':').map(Number);
+      const startMinutes = startH * 60 + startM;
+      const endMinutes = endH * 60 + endM;
+
+      for (let t = startMinutes; t + 30 <= endMinutes; t += 30) {
+        const slotStart = `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+        const slotEnd = `${String(Math.floor((t + 30) / 60)).padStart(2, '0')}:${String((t + 30) % 60).padStart(2, '0')}`;
+        const slotKey = `${slotStart}-${slotEnd}`;
+        if (!bookedSlots.has(slotKey)) {
+          availableSlots.push(slotKey);
+        }
+      }
+    }
 
     return { date, dayOfWeek, slots: availableSlots };
   }
@@ -200,20 +213,21 @@ export class PatientPortalService {
       throw new ConflictException('This date is blocked by the doctor');
     }
 
-    // Verify the time slot exists in the doctor's schedule for this day
+    // Verify the time slot falls within the doctor's schedule for this day
+    // Slots are 30-min sub-slots in format "HH:MM-HH:MM"
     const [slotStart, slotEnd] = timeSlot.split('-');
-    const scheduleSlot = await this.prisma.doctorSchedule.findFirst({
-      where: {
-        doctorId,
-        dayOfWeek,
-        startTime: slotStart,
-        endTime: slotEnd,
-      },
+    const schedules = await this.prisma.doctorSchedule.findMany({
+      where: { doctorId, dayOfWeek },
+      select: { startTime: true, endTime: true },
     });
 
-    if (!scheduleSlot) {
+    const slotFitsSchedule = schedules.some(
+      (s) => slotStart >= s.startTime && slotEnd <= s.endTime,
+    );
+
+    if (!slotFitsSchedule) {
       throw new BadRequestException(
-        'This time slot is not in the doctor\'s schedule',
+        "This time slot is not in the doctor's schedule",
       );
     }
 

@@ -5,7 +5,10 @@
 
 import { logError, ErrorSeverity } from './errorLogger';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL =
+  typeof window !== 'undefined'
+    ? '/api' // browser: route through Next.js rewrite proxy (avoids CORS)
+    : process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'; // server-side: direct
 const TOKEN_KEY = 'access_token';
 
 // Retry configuration

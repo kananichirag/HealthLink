@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../../src/doctor/dto/set-max-appointments.dto.ts"],"sourcesContent":["import { IsInt, Min } from 'class-validator';\n\nexport class SetMaxAppointmentsDto {\n  @IsInt()\n  @Min(1)\n  maxPerDay: number;\n}\n"],"names":["SetMaxAppointmentsDto"],"mappings":";;;;+BAEaA;;;eAAAA;;;gCAFc;;;;;;;;;;AAEpB,IAAA,AAAMA,wBAAN,MAAMA;AAIb"}

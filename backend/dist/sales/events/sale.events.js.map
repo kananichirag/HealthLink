@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../../src/sales/events/sale.events.ts"],"sourcesContent":["export class SaleNearExpiryMedicineEvent {\n  medicineId: string;\n  medicineName: string;\n  batchNumber: string;\n  expiryDate: Date;\n  saleId: string;\n  customerName: string;\n}"],"names":["SaleNearExpiryMedicineEvent"],"mappings":";;;;+BAAaA;;;eAAAA;;;AAAN,IAAA,AAAMA,8BAAN,MAAMA;AAOb"}

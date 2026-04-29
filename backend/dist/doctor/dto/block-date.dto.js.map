@@ -1,1 +1,0 @@
-{"version":3,"sources":["../../../src/doctor/dto/block-date.dto.ts"],"sourcesContent":["import { IsDateString } from 'class-validator';\n\nexport class BlockDateDto {\n  @IsDateString()\n  date: string;\n}\n"],"names":["BlockDateDto"],"mappings":";;;;+BAEaA;;;eAAAA;;;gCAFgB;;;;;;;;;;AAEtB,IAAA,AAAMA,eAAN,MAAMA;AAGb"}

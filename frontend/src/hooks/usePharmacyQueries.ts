@@ -303,3 +303,44 @@ export function usePaymentBreakdown(filters?: ReportFilters) {
       fetchJson(`/pharmacy/reports/payment-breakdown${toQueryString(filters as Record<string, unknown>)}`),
   });
 }
+
+// ── Doctor Connection hooks ──
+
+export interface DoctorConnection {
+  id: string;
+  status: string;
+  createdAt: string;
+  doctor: { id: string; name: string; email: string };
+}
+
+export function useDoctorConnections(status?: string) {
+  return useQuery({
+    queryKey: ['pharmacy', 'doctor-connections', status],
+    queryFn: () =>
+      fetchJson<DoctorConnection[]>(
+        `/pharmacy/doctor-connections${toQueryString(status !== undefined ? { status } : undefined)}`
+      ),
+  });
+}
+
+export function useAcceptConnection() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      mutateJson(`/doctor/pharmacy-connections/${id}/accept`, 'PATCH'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pharmacy', 'doctor-connections'] });
+    },
+  });
+}
+
+export function useRejectConnection() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      mutateJson(`/doctor/pharmacy-connections/${id}`, 'DELETE'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pharmacy', 'doctor-connections'] });
+    },
+  });
+}

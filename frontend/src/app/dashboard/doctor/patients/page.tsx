@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   usePatients,
   useCreatePatient,
@@ -35,6 +36,7 @@ const inpStyle: React.CSSProperties = {
 };
 
 export default function DoctorPatientsPage() {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
@@ -183,7 +185,8 @@ export default function DoctorPatientsPage() {
           return (
             <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '2fr 0.5fr 0.7fr 1.2fr 1.6fr 1.2fr 0.5fr', padding: '14px 20px', borderBottom: i < displayPatients.length - 1 ? '1px solid #f1f4f3' : 'none', alignItems: 'center', cursor: 'pointer' }}
               onMouseEnter={(e) => { e.currentTarget.style.background = '#f7faf8'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}>
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+              onClick={() => { if (!isDemo) router.push(`/dashboard/doctor/patients/${p.id}`); }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Avatar name={name} color={AVATAR_COLORS[i % AVATAR_COLORS.length]} />
                 <div>
@@ -199,7 +202,12 @@ export default function DoctorPatientsPage() {
                 <p style={{ fontSize: '12px', fontWeight: 500, color: '#181c1c', margin: 0 }}>{lastVisit}</p>
                 {lastVisitType && <p style={{ fontSize: '11px', color: lastVisitColor, margin: '2px 0 0', fontWeight: 500 }}>{lastVisitType}</p>}
               </div>
-              <button style={{ width: '28px', height: '28px', border: '1px solid #e5e9e7', borderRadius: '6px', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6e7977' }}>
+              <button 
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  if (!isDemo) router.push(`/dashboard/doctor/patients/${p.id}`); 
+                }}
+                style={{ width: '28px', height: '28px', border: '1px solid #e5e9e7', borderRadius: '6px', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6e7977' }}>
                 <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg>
               </button>
             </div>

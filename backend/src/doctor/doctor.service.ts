@@ -175,6 +175,31 @@ export class DoctorService {
       );
     }
 
+    // Validate targetPharmacyId when provided (Requirements 12.1–12.4)
+    if (dto.targetPharmacyId) {
+      // Sub-task 1.1: Verify an active connection exists between this doctor and the pharmacy
+      const activeConnection = await this.prisma.doctorPharmacyConnection.findFirst({
+        where: { doctorId, pharmacyId: dto.targetPharmacyId, status: 'ACTIVE' },
+      });
+
+      if (!activeConnection) {
+        throw new BadRequestException(
+          'No active connection exists with the specified pharmacy',
+        );
+      }
+
+      // Sub-task 1.2: Verify the target user actually has the PHARMACY role
+      const pharmacyUser = await this.prisma.user.findFirst({
+        where: { id: dto.targetPharmacyId, role: 'PHARMACY' },
+      });
+
+      if (!pharmacyUser) {
+        throw new BadRequestException(
+          'Target pharmacy not found or is not a pharmacy account',
+        );
+      }
+    }
+
     // Resolve medicine names to medicine IDs within the tenant
     const itemsWithMedicineIds = await Promise.all(
       dto.items.map(async (item) => {
@@ -812,6 +837,88 @@ export class DoctorService {
     }
 
     return appointment;
+  }
+
+  async getRecentPrescriptions(doctorId: string, limit: number) {
+    const [prescriptions, count] = await Promise.all([
+      this.prisma.prescription.findMany({
+        where: { doctorId },
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          patient: { select: { id: true, name: true } },
+          items: {
+            include: {
+              medicine: { select: { id: true, name: true } },
+            },
+          },
+        },
+      }),
+      this.prisma.prescription.count({ where: { doctorId } }),
+    ]);
+
+    return { data: prescriptions, total: count, limit };
+  }
+
+  async getPatientPrescriptions(
+    patientId: string,
+    doctorId: string,
+    tenantId: string,
+  ) {
+    // Verify patient belongs to doctor's tenant
+    const patient = await this.prisma.patient.findFirst({
+      where: { id: patientId, tenantId },
+    });
+
+    if (!patient) {
+      throw new ForbiddenException('Patient does not belong to your tenant');
+    }
+
+    const prescriptions = await this.prisma.prescription.findMany({
+      where: { patientId, doctorId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        items: {
+          include: {
+            medicine: { select: { id: true, name: true } },
+          },
+        },
+      },
+    });
+
+    // Collect all non-null targetPharmacyId values
+    const pharmacyIds = [
+      ...new Set(
+        prescriptions
+          .map((p) => p.targetPharmacyId)
+          .filter((id): id is string => id !== null),
+      ),
+    ];
+
+    // Fetch pharmacy names in a single query
+    let pharmacyMap: Record<string, string> = {};
+    if (pharmacyIds.length > 0) {
+      const pharmacyUsers = await this.prisma.user.findMany({
+        where: { id: { in: pharmacyIds } },
+        select: { id: true, name: true },
+      });
+      pharmacyMap = Object.fromEntries(
+        pharmacyUsers.map((u) => [u.id, u.name]),
+      );
+    }
+
+    // Enrich each prescription with targetPharmacy info
+    const enriched = prescriptions.map((prescription) => ({
+      ...prescription,
+      targetPharmacy: prescription.targetPharmacyId
+        ? {
+            id: prescription.targetPharmacyId,
+            name: pharmacyMap[prescription.targetPharmacyId] ?? null,
+          }
+        : null,
+    }));
+
+    return enriched;
   }
 
   async completeAppointment(

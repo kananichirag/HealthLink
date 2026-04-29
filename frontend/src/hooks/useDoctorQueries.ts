@@ -296,3 +296,46 @@ export function useCompleteAppointment() {
     },
   });
 }
+
+// ── Recent & Patient Prescription hooks ──
+
+export interface Prescription {
+  id: string;
+  status: string;
+  createdAt: string;
+  patient: { id: string; name: string };
+  items: Array<{
+    id: string;
+    medicineName: string;
+    dosage: string;
+    frequency: string;
+    quantity: number;
+    medicine?: { id: string; name: string };
+  }>;
+  targetPharmacyId?: string;
+}
+
+export interface RecentPrescriptionsResponse {
+  data: Prescription[];
+  total: number;
+  limit: number;
+}
+
+export function useRecentPrescriptions(limit?: number) {
+  return useQuery({
+    queryKey: ['doctor', 'prescriptions', 'recent', limit],
+    queryFn: () =>
+      fetchJson<RecentPrescriptionsResponse>(
+        `/doctor/prescriptions${toQueryString(limit !== undefined ? { limit } : undefined)}`
+      ),
+  });
+}
+
+export function usePatientPrescriptions(patientId: string) {
+  return useQuery({
+    queryKey: ['doctor', 'patients', patientId, 'prescriptions'],
+    queryFn: () =>
+      fetchJson<Prescription[]>(`/doctor/patients/${patientId}/prescriptions`),
+    enabled: !!patientId,
+  });
+}

@@ -7,3 +7,4 @@ export { PurchaseQueryDto } from './purchase-query.dto';
 export { InventoryQueryDto } from './inventory-query.dto';
 export { PrescriptionCheckoutDto } from './prescription-checkout.dto';
 export { ReportQueryDto } from './report-query.dto';
+export * from './connection-query.dto';

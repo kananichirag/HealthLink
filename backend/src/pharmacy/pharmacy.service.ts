@@ -19,7 +19,7 @@ import {
   ReportQueryDto,
 } from './dto';
 import { CreateSaleDto } from '../sales/dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, ConnectionStatus } from '@prisma/client';
 
 @Injectable()
 export class PharmacyService {
@@ -73,6 +73,24 @@ export class PharmacyService {
     ]);
 
     return { data: prescriptions, total, page, limit };
+  }
+
+  async listDoctorConnections(pharmacyUserId: string, status?: ConnectionStatus) {
+    const where: Prisma.DoctorPharmacyConnectionWhereInput = {
+      pharmacyId: pharmacyUserId,
+    };
+
+    if (status) {
+      where.status = status;
+    }
+
+    return this.prisma.doctorPharmacyConnection.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        doctor: { select: { id: true, name: true, email: true } },
+      },
+    });
   }
 
   async dispensePrescription(prescriptionId: string, pharmacyUserId: string) {

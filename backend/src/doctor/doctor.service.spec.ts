@@ -421,9 +421,17 @@ describe('DoctorService', () => {
       expect(mockPrismaService.prescription.create).not.toHaveBeenCalled();
     });
 
-    it('should set targetPharmacyId when provided', async () => {
+    it('should set targetPharmacyId when provided and active connection + pharmacy role exist', async () => {
       const dtoWithPharmacy = { ...dto, targetPharmacyId: 'pharmacy-1' };
       mockPrismaService.patient.findFirst.mockResolvedValue({ id: 'patient-1', tenantId });
+      // Mock active connection check (sub-task 1.1)
+      mockPrismaService.doctorPharmacyConnection.findFirst.mockResolvedValue({
+        id: 'conn-1', doctorId, pharmacyId: 'pharmacy-1', status: 'ACTIVE',
+      });
+      // Mock pharmacy role check (sub-task 1.2)
+      mockPrismaService.user.findFirst.mockResolvedValue({
+        id: 'pharmacy-1', role: 'PHARMACY',
+      });
       mockPrismaService.medicine.findFirst.mockResolvedValue({ id: 'med-1', name: 'Paracetamol', tenantId });
       const created = {
         id: 'rx-2',
@@ -446,6 +454,59 @@ describe('DoctorService', () => {
           data: expect.objectContaining({ targetPharmacyId: 'pharmacy-1' }),
         }),
       );
+    });
+
+    it('should throw BadRequestException when no active connection exists with target pharmacy', async () => {
+      const dtoWithPharmacy = { ...dto, targetPharmacyId: 'pharmacy-1' };
+      mockPrismaService.patient.findFirst.mockResolvedValue({ id: 'patient-1', tenantId });
+      // No active connection found
+      mockPrismaService.doctorPharmacyConnection.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.createPrescription(dtoWithPharmacy, doctorId, tenantId),
+      ).rejects.toThrow(BadRequestException);
+      expect(mockPrismaService.prescription.create).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestException when targetPharmacyId does not belong to a PHARMACY user', async () => {
+      const dtoWithPharmacy = { ...dto, targetPharmacyId: 'not-a-pharmacy' };
+      mockPrismaService.patient.findFirst.mockResolvedValue({ id: 'patient-1', tenantId });
+      // Active connection exists
+      mockPrismaService.doctorPharmacyConnection.findFirst.mockResolvedValue({
+        id: 'conn-1', doctorId, pharmacyId: 'not-a-pharmacy', status: 'ACTIVE',
+      });
+      // But the user is not a PHARMACY role
+      mockPrismaService.user.findFirst.mockResolvedValue(null);
+
+      await expect(
+        service.createPrescription(dtoWithPharmacy, doctorId, tenantId),
+      ).rejects.toThrow(BadRequestException);
+      expect(mockPrismaService.prescription.create).not.toHaveBeenCalled();
+    });
+
+    it('should skip connection and role checks when targetPharmacyId is absent (draft path)', async () => {
+      // dto has no targetPharmacyId — draft path
+      mockPrismaService.patient.findFirst.mockResolvedValue({ id: 'patient-1', tenantId });
+      mockPrismaService.medicine.findFirst.mockResolvedValue({ id: 'med-1', name: 'Paracetamol', tenantId });
+      const created = {
+        id: 'rx-draft',
+        patientId: 'patient-1',
+        doctorId,
+        status: 'PENDING',
+        tenantId,
+        targetPharmacyId: null,
+        items: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockPrismaService.prescription.create.mockResolvedValue(created);
+
+      const result = await service.createPrescription(dto, doctorId, tenantId);
+
+      expect(result.targetPharmacyId).toBeNull();
+      // Connection and user checks should NOT have been called
+      expect(mockPrismaService.doctorPharmacyConnection.findFirst).not.toHaveBeenCalled();
+      expect(mockPrismaService.user.findFirst).not.toHaveBeenCalled();
     });
   });
 

@@ -73,6 +73,7 @@ export default function Sidebar({ role }: SidebarProps) {
         return [
           { label: 'Dashboard', href: '/dashboard/pharmacy', icon: Icons.dashboard },
           { label: 'Prescriptions', href: '/dashboard/pharmacy/prescriptions', icon: Icons.prescriptions },
+          { label: 'Doctor Connections', href: '/dashboard/pharmacy/doctor-connections', icon: Icons.connections },
           { label: 'Medicines', href: '/dashboard/pharmacy/medicines', icon: Icons.pharmacy },
           { label: 'Inventory', href: '/dashboard/pharmacy/inventory', icon: Icons.inventory },
           { label: 'Purchases', href: '/dashboard/pharmacy/purchases', icon: Icons.purchases },

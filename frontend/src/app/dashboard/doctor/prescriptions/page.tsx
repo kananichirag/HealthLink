@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   usePatients,
   useCreatePrescription,
-  useDispatchPrescription,
   usePharmacyConnections,
+  useRecentPrescriptions,
   type PrescriptionItemInput,
 } from '@/hooks/useDoctorQueries';
 import { 
@@ -18,18 +18,18 @@ import {
   Pill,
   FileText,
   Clock,
-  Calendar as CalendarIcon,
   Search,
   Save
 } from 'lucide-react';
 
 export default function DoctorPrescriptionsPage() {
-  const [showForm, setShowForm] = useState(true);
   const [patientId, setPatientId] = useState('');
   const [targetPharmacyId, setTargetPharmacyId] = useState('');
   const [items, setItems] = useState<PrescriptionItemInput[]>([
     { medicineName: '', dosage: '', frequency: '', quantity: 1 },
   ]);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [isDraft, setIsDraft] = useState(false);
 
   const { data: patientsData } = usePatients();
   const patients = Array.isArray(patientsData) ? patientsData : (patientsData as any)?.data ?? [];
@@ -38,9 +38,29 @@ export default function DoctorPrescriptionsPage() {
   const connections = Array.isArray(connectionsData) ? connectionsData : [];
   const activeConnections = connections.filter((c: any) => c.status === 'ACTIVE');
 
+  const { data: recentData, isLoading: recentLoading } = useRecentPrescriptions(5);
+  const recentPrescriptions = recentData?.data ?? [];
+
   const createPrescription = useCreatePrescription();
 
   const selectedPatient = patients.find((p: any) => p.id === patientId);
+
+  // Auto-select pharmacy when there is exactly one active connection
+  useEffect(() => {
+    if (activeConnections.length === 1) {
+      const conn = activeConnections[0] as any;
+      setTargetPharmacyId(conn.pharmacy?.id ?? conn.pharmacyId ?? '');
+    }
+  }, [activeConnections.length]);
+
+  // Derive selected pharmacy name for the summary sidebar
+  const selectedPharmacyName = (() => {
+    if (!targetPharmacyId) return null;
+    const conn = activeConnections.find(
+      (c: any) => (c.pharmacy?.id ?? c.pharmacyId) === targetPharmacyId
+    ) as any;
+    return conn?.pharmacy?.name ?? conn?.pharmacyId ?? null;
+  })();
 
   const addItem = () => {
     setItems([...items, { medicineName: '', dosage: '', frequency: '', quantity: 1 }]);
@@ -56,26 +76,75 @@ export default function DoctorPrescriptionsPage() {
     setItems(updated);
   };
 
+  const resetForm = () => {
+    setPatientId('');
+    setTargetPharmacyId('');
+    setItems([{ medicineName: '', dosage: '', frequency: '', quantity: 1 }]);
+    setValidationErrors({});
+  };
+
+  const validate = (): Record<string, string> => {
+    const errors: Record<string, string> = {};
+    if (!patientId) errors.patient = 'Please select a patient';
+    if (!items.some((i) => i.medicineName.trim())) errors.items = 'Please add at least one medicine';
+    if (activeConnections.length >= 2 && !targetPharmacyId) errors.pharmacy = 'Please select a target pharmacy';
+    return errors;
+  };
+
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!patientId || items.some((i) => !i.medicineName || !i.dosage || !i.frequency)) return;
+    const errors = validate();
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    setValidationErrors({});
     createPrescription.mutate(
       { patientId, items, targetPharmacyId: targetPharmacyId || undefined },
       {
         onSuccess: () => {
-          setPatientId('');
-          setTargetPharmacyId('');
-          setItems([{ medicineName: '', dosage: '', frequency: '', quantity: 1 }]);
+          resetForm();
         },
       },
     );
   };
 
-  // Mock recent prescriptions
-  const recentPrescriptions = [
-    { name: 'Amlodipine 5mg', date: 'Oct 12, 2023', items: 2 },
-    { name: 'Atorvastatin 20mg', date: 'Aug 05, 2023', items: 1 },
-  ];
+  const handleSaveAsDraft = () => {
+    setIsDraft(true);
+    createPrescription.mutate(
+      { patientId, items, targetPharmacyId: undefined },
+      {
+        onSuccess: () => {
+          resetForm();
+          setIsDraft(false);
+        },
+        onError: () => {
+          setIsDraft(false);
+        },
+      },
+    );
+  };
+
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Date(dateStr).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'PENDING': return 'bg-yellow-100 text-yellow-800';
+      case 'DISPENSED': return 'bg-green-100 text-green-800';
+      case 'CANCELLED': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -149,13 +218,16 @@ export default function DoctorPrescriptionsPage() {
                     value={patientId}
                     onChange={(e) => setPatientId(e.target.value)}
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    required
                   >
                     <option value="">Select patient...</option>
                     {patients.map((p: any) => (
                       <option key={p.id} value={p.id}>{p.name}</option>
                     ))}
                   </select>
+                )}
+
+                {validationErrors.patient && (
+                  <p className="text-sm text-red-600 mt-2">{validationErrors.patient}</p>
                 )}
               </div>
             </div>
@@ -186,7 +258,6 @@ export default function DoctorPrescriptionsPage() {
                           value={item.medicineName}
                           onChange={(e) => updateItem(idx, 'medicineName', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
-                          required
                         />
                       </div>
                     </div>
@@ -200,7 +271,6 @@ export default function DoctorPrescriptionsPage() {
                           value={item.dosage}
                           onChange={(e) => updateItem(idx, 'dosage', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
-                          required
                         />
                       </div>
                       <div>
@@ -211,7 +281,6 @@ export default function DoctorPrescriptionsPage() {
                           value={item.frequency}
                           onChange={(e) => updateItem(idx, 'frequency', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
-                          required
                         />
                       </div>
                       <div className="flex items-end gap-2">
@@ -223,7 +292,6 @@ export default function DoctorPrescriptionsPage() {
                             onChange={(e) => updateItem(idx, 'quantity', parseInt(e.target.value) || 1)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
                             min={1}
-                            required
                           />
                         </div>
                         {items.length > 1 && (
@@ -267,6 +335,10 @@ export default function DoctorPrescriptionsPage() {
                   <Plus size={18} />
                   Add Another Medication
                 </button>
+
+                {validationErrors.items && (
+                  <p className="text-sm text-red-600 mt-2">{validationErrors.items}</p>
+                )}
               </div>
             </div>
 
@@ -282,18 +354,42 @@ export default function DoctorPrescriptionsPage() {
               </div>
 
               <div className="p-6">
-                <select
-                  value={targetPharmacyId}
-                  onChange={(e) => setTargetPharmacyId(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                >
-                  <option value="">City Pharmacy - 124 Medical Dr, North Wing</option>
-                  {activeConnections.map((c: any) => (
-                    <option key={c.pharmacy?.id || c.pharmacyId} value={c.pharmacy?.id || c.pharmacyId}>
-                      {c.pharmacy?.name || c.pharmacyId}
-                    </option>
-                  ))}
-                </select>
+                {activeConnections.length === 0 ? (
+                  /* Connection gate: no active connections */
+                  <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <AlertCircle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm font-medium text-amber-800">
+                      Please connect with at least 1 pharmacy first
+                    </p>
+                  </div>
+                ) : activeConnections.length === 1 ? (
+                  /* Single connection: show read-only pharmacy name */
+                  <div className="flex items-center gap-3 p-3 bg-teal-50 border border-teal-200 rounded-lg">
+                    <CheckCircle size={18} className="text-teal-600 flex-shrink-0" />
+                    <p className="text-sm font-medium text-teal-800">
+                      {(activeConnections[0] as any).pharmacy?.name ?? (activeConnections[0] as any).pharmacyId}
+                    </p>
+                  </div>
+                ) : (
+                  /* Multiple connections: show dropdown */
+                  <>
+                    <select
+                      value={targetPharmacyId}
+                      onChange={(e) => setTargetPharmacyId(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    >
+                      <option value="">Select a pharmacy...</option>
+                      {activeConnections.map((c: any) => (
+                        <option key={c.pharmacy?.id ?? c.pharmacyId} value={c.pharmacy?.id ?? c.pharmacyId}>
+                          {c.pharmacy?.name ?? c.pharmacyId}
+                        </option>
+                      ))}
+                    </select>
+                    {validationErrors.pharmacy && (
+                      <p className="text-sm text-red-600 mt-2">{validationErrors.pharmacy}</p>
+                    )}
+                  </>
+                )}
               </div>
             </div>
 
@@ -336,11 +432,13 @@ export default function DoctorPrescriptionsPage() {
                   {selectedPatient ? (
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-bold">EM</span>
+                        <span className="text-sm font-bold">
+                          {selectedPatient.name?.slice(0, 2).toUpperCase() ?? 'PT'}
+                        </span>
                       </div>
                       <div>
                         <p className="font-semibold">{selectedPatient.name}</p>
-                        <p className="text-xs text-teal-100">{selectedPatient.age || '72'} y • {selectedPatient.gender || 'Female'}</p>
+                        <p className="text-xs text-teal-100">{selectedPatient.age || '—'} y • {selectedPatient.gender || '—'}</p>
                       </div>
                     </div>
                   ) : (
@@ -364,27 +462,48 @@ export default function DoctorPrescriptionsPage() {
 
                 <div>
                   <p className="text-xs text-teal-100 uppercase mb-1">PHARMACY</p>
-                  <p className="text-sm font-semibold">City Pharmacy</p>
+                  <p className="text-sm font-semibold">
+                    {selectedPharmacyName ?? (activeConnections.length === 0 ? 'No pharmacy connected' : 'Not selected')}
+                  </p>
                 </div>
               </div>
+
+              {/* Validation errors */}
+              {Object.keys(validationErrors).length > 0 && (
+                <div className="mt-4 p-3 bg-red-500/20 border border-red-400/40 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle size={16} className="text-red-200 flex-shrink-0 mt-0.5" />
+                    <ul className="space-y-1">
+                      {Object.values(validationErrors).map((err, i) => (
+                        <li key={i} className="text-xs text-red-100">{err}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
 
               <div className="mt-6 pt-6 border-t border-white/20 space-y-3">
                 <button
                   onClick={handleCreate}
-                  disabled={createPrescription.isPending || !patientId}
+                  disabled={createPrescription.isPending || activeConnections.length === 0}
                   className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white text-teal-600 rounded-lg hover:bg-teal-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold"
                 >
                   <Send size={18} />
-                  {createPrescription.isPending ? 'Creating...' : 'Create & Send'}
+                  {createPrescription.isPending && !isDraft ? 'Creating...' : 'Create & Send'}
                 </button>
-                <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors font-medium">
+                <button
+                  type="button"
+                  onClick={handleSaveAsDraft}
+                  disabled={createPrescription.isPending}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                >
                   <Save size={18} />
-                  Save as Draft
+                  {isDraft && createPrescription.isPending ? 'Saving...' : 'Save as Draft'}
                 </button>
               </div>
 
               <p className="text-xs text-teal-100 text-center mt-4">
-                By clicking Create & Send, you are digitally signing this prescription under CURES 2.0 Act.
+                By clicking Create &amp; Send, you are digitally signing this prescription under CURES 2.0 Act.
               </p>
             </div>
 
@@ -395,12 +514,25 @@ export default function DoctorPrescriptionsPage() {
                 <h3 className="font-bold text-gray-900">Recent Prescriptions</h3>
               </div>
               <div className="space-y-3">
-                {recentPrescriptions.map((rx, i) => (
-                  <div key={i} className="p-3 bg-blue-50 rounded-lg">
-                    <p className="text-sm font-semibold text-gray-900">{rx.name}</p>
-                    <p className="text-xs text-gray-600 mt-1">{rx.date} • {rx.items} items</p>
-                  </div>
-                ))}
+                {recentLoading ? (
+                  <p className="text-sm text-gray-500">Loading...</p>
+                ) : recentPrescriptions.length === 0 ? (
+                  <p className="text-sm text-gray-500">No recent prescriptions</p>
+                ) : (
+                  recentPrescriptions.map((rx: any) => (
+                    <div key={rx.id} className="p-3 bg-blue-50 rounded-lg">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-semibold text-gray-900">{rx.patient?.name ?? 'Unknown patient'}</p>
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${getStatusBadgeClass(rx.status)}`}>
+                          {rx.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1">
+                        {formatDate(rx.createdAt)} • {rx.items?.length ?? 0} {rx.items?.length === 1 ? 'item' : 'items'}
+                      </p>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>

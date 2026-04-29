@@ -30,6 +30,7 @@ import {
   SetMaxAppointmentsDto,
   AppointmentQueryDto,
   RescheduleDto,
+  RecentPrescriptionsQueryDto,
 } from './dto';
 
 @Controller('doctor')
@@ -83,6 +84,30 @@ export class DoctorController {
     return this.doctorService.getPatientAllergyReports(
       patientId,
       req.user.tenantId,
+    );
+  }
+
+  @Get('patients/:patientId/prescriptions')
+  async getPatientPrescriptions(
+    @Param('patientId') patientId: string,
+    @Request() req: any,
+  ) {
+    return this.doctorService.getPatientPrescriptions(
+      patientId,
+      req.user.sub,
+      req.user.tenantId,
+    );
+  }
+
+  @Get('prescriptions')
+  async getRecentPrescriptions(
+    @Query(new ValidationPipe({ transform: true }))
+    query: RecentPrescriptionsQueryDto,
+    @Request() req: any,
+  ) {
+    return this.doctorService.getRecentPrescriptions(
+      req.user.sub,
+      query.limit ?? 5,
     );
   }
 

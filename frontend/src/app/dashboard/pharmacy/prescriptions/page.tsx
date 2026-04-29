@@ -4,7 +4,11 @@ import React, { useState } from 'react';
 import {
   usePharmacyPrescriptions,
   useDispensePrescription,
+  usePrescriptionCheckout,
+  useCreateSale,
+  type CreateSaleInput,
 } from '@/hooks/usePharmacyQueries';
+import CheckoutSummaryModal from '@/components/CheckoutSummaryModal';
 
 const statusColors: Record<string, string> = {
   PENDING: 'bg-yellow-100 text-yellow-800',
@@ -17,6 +21,8 @@ export default function PharmacyPrescriptionsPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [page, setPage] = useState(1);
+  const [checkoutData, setCheckoutData] = useState<any>(null);
+  const [checkoutPrescriptionId, setCheckoutPrescriptionId] = useState<string | null>(null);
 
   const { data, isLoading, error } = usePharmacyPrescriptions({
     status: statusFilter || undefined,
@@ -28,10 +34,38 @@ export default function PharmacyPrescriptionsPage() {
   const prescriptions = Array.isArray(data) ? data : (data as any)?.data ?? [];
 
   const dispenseMutation = useDispensePrescription();
+  const checkoutMutation = usePrescriptionCheckout();
+  const createSaleMutation = useCreateSale();
 
   const handleDispense = (id: string) => {
     if (!confirm('Mark this prescription as dispensed?')) return;
     dispenseMutation.mutate(id);
+  };
+
+  const handleCheckout = (id: string) => {
+    checkoutMutation.mutate(id, {
+      onSuccess: (data) => {
+        setCheckoutData(data);
+        setCheckoutPrescriptionId(id);
+      },
+    });
+  };
+
+  const handleConfirmSale = (saleData: CreateSaleInput) => {
+    createSaleMutation.mutate(
+      { ...saleData, prescriptionId: checkoutPrescriptionId! },
+      {
+        onSuccess: () => {
+          setCheckoutData(null);
+          setCheckoutPrescriptionId(null);
+        },
+      }
+    );
+  };
+
+  const handleCloseModal = () => {
+    setCheckoutData(null);
+    setCheckoutPrescriptionId(null);
   };
 
   return (
@@ -119,11 +153,11 @@ export default function PharmacyPrescriptionsPage() {
                       <td className="px-4 py-3">
                         {p.status === 'PENDING' && (
                           <button
-                            onClick={() => handleDispense(p.id)}
-                            disabled={dispenseMutation.isPending}
-                            className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 transition"
+                            onClick={() => handleCheckout(p.id)}
+                            disabled={checkoutMutation.isPending}
+                            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition"
                           >
-                            Dispense
+                            {checkoutMutation.isPending ? 'Loading...' : 'Checkout'}
                           </button>
                         )}
                       </td>
@@ -138,6 +172,18 @@ export default function PharmacyPrescriptionsPage() {
         {dispenseMutation.isError && (
           <p className="px-4 pb-4 text-red-600 text-sm">
             Dispense failed: {(dispenseMutation.error as Error).message}
+          </p>
+        )}
+
+        {checkoutMutation.isError && (
+          <p className="px-4 pb-4 text-red-600 text-sm">
+            Checkout failed: {(checkoutMutation.error as Error).message}
+          </p>
+        )}
+
+        {createSaleMutation.isError && (
+          <p className="px-4 pb-4 text-red-600 text-sm">
+            Sale creation failed: {(createSaleMutation.error as Error).message}
           </p>
         )}
 
@@ -159,6 +205,16 @@ export default function PharmacyPrescriptionsPage() {
           </button>
         </div>
       </div>
+
+      {/* Checkout Summary Modal */}
+      {checkoutData && (
+        <CheckoutSummaryModal
+          checkoutData={checkoutData}
+          onConfirm={handleConfirmSale}
+          onClose={handleCloseModal}
+          isSubmitting={createSaleMutation.isPending}
+        />
+      )}
     </div>
   );
 }

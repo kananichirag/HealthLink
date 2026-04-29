@@ -28,6 +28,7 @@ import {
   InventoryQueryDto,
   PrescriptionCheckoutDto,
   ReportQueryDto,
+  ConnectionQueryDto,
 } from './dto';
 import { CreateSaleDto } from '../sales/dto';
 
@@ -44,6 +45,15 @@ export class PharmacyController {
     @Request() req: any,
   ) {
     return this.pharmacyService.listPrescriptions(query, req.user.sub);
+  }
+
+  @Get('doctor-connections')
+  async listDoctorConnections(
+    @Query(new ValidationPipe({ whitelist: true, transform: true }))
+    query: ConnectionQueryDto,
+    @Request() req: any,
+  ) {
+    return this.pharmacyService.listDoctorConnections(req.user.sub, query.status);
   }
 
   @Patch('prescriptions/:id/dispense')

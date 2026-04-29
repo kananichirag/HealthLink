@@ -1,23 +1,29 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "UpdatePrescriptionStatusDto", {
+    enumerable: true,
+    get: function() {
+        return UpdatePrescriptionStatusDto;
+    }
+});
+const _classvalidator = require("class-validator");
+const _client = require("@prisma/client");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdatePrescriptionStatusDto = void 0;
-const class_validator_1 = require("class-validator");
-const client_1 = require("@prisma/client");
-class UpdatePrescriptionStatusDto {
-    status;
 }
-exports.UpdatePrescriptionStatusDto = UpdatePrescriptionStatusDto;
-__decorate([
-    (0, class_validator_1.IsEnum)(client_1.PrescriptionStatus),
-    __metadata("design:type", String)
+function _ts_metadata(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+let UpdatePrescriptionStatusDto = class UpdatePrescriptionStatusDto {
+};
+_ts_decorate([
+    (0, _classvalidator.IsEnum)(_client.PrescriptionStatus),
+    _ts_metadata("design:type", typeof _client.PrescriptionStatus === "undefined" ? Object : _client.PrescriptionStatus)
 ], UpdatePrescriptionStatusDto.prototype, "status", void 0);
+
 //# sourceMappingURL=update-prescription-status.dto.js.map

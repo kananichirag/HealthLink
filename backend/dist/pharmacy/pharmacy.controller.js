@@ -1,31 +1,36 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "PharmacyController", {
+    enumerable: true,
+    get: function() {
+        return PharmacyController;
+    }
+});
+const _common = require("@nestjs/common");
+const _jwtauthguard = require("../auth/guards/jwt-auth.guard");
+const _rolesguard = require("../auth/guards/roles.guard");
+const _rolesdecorator = require("../auth/decorators/roles.decorator");
+const _client = require("@prisma/client");
+const _pharmacyservice = require("./pharmacy.service");
+const _dto = require("./dto");
+const _dto1 = require("../sales/dto");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
+}
+function _ts_metadata(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.PharmacyController = void 0;
-const common_1 = require("@nestjs/common");
-const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
-const roles_guard_1 = require("../auth/guards/roles.guard");
-const roles_decorator_1 = require("../auth/decorators/roles.decorator");
-const client_1 = require("@prisma/client");
-const pharmacy_service_1 = require("./pharmacy.service");
-const dto_1 = require("./dto");
-const dto_2 = require("../sales/dto");
+}
+function _ts_param(paramIndex, decorator) {
+    return function(target, key) {
+        decorator(target, key, paramIndex);
+    };
+}
 let PharmacyController = class PharmacyController {
-    pharmacyService;
-    constructor(pharmacyService) {
-        this.pharmacyService = pharmacyService;
-    }
     async listPrescriptions(query, req) {
         return this.pharmacyService.listPrescriptions(query, req.user.sub);
     }
@@ -41,18 +46,21 @@ let PharmacyController = class PharmacyController {
     async updateMedicine(id, dto) {
         return this.pharmacyService.updateMedicine(id, dto);
     }
+    // ─── Inventory ───
     async listInventory(query, req) {
         return this.pharmacyService.listInventory(query, req.user.tenantId);
     }
     async getInventoryAlerts(req) {
         return this.pharmacyService.getInventoryAlerts(req.user.tenantId);
     }
+    // ─── Purchases ───
     async recordPurchase(dto, req) {
         return this.pharmacyService.recordPurchase(dto, req.user.tenantId);
     }
     async listPurchases(query, req) {
         return this.pharmacyService.listPurchases(query, req.user.tenantId);
     }
+    // ─── Reports ───
     async getDailyReport(query, req) {
         return this.pharmacyService.getDailyReport(req.user.tenantId, query);
     }
@@ -65,6 +73,7 @@ let PharmacyController = class PharmacyController {
     async getPaymentBreakdown(query, req) {
         return this.pharmacyService.getPaymentBreakdown(req.user.tenantId, query);
     }
+    // ─── Sales ───
     async prescriptionCheckout(dto, req) {
         return this.pharmacyService.prescriptionCheckout(dto.prescriptionId, req.user.sub);
     }
@@ -86,167 +95,266 @@ let PharmacyController = class PharmacyController {
     async sendBillToPatient(id) {
         return this.pharmacyService.sendBillToPatient(id);
     }
+    constructor(pharmacyService){
+        this.pharmacyService = pharmacyService;
+    }
 };
-exports.PharmacyController = PharmacyController;
-__decorate([
-    (0, common_1.Get)('prescriptions'),
-    __param(0, (0, common_1.Query)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.PrescriptionQueryDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('prescriptions'),
+    _ts_param(0, (0, _common.Query)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.PrescriptionQueryDto === "undefined" ? Object : _dto.PrescriptionQueryDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "listPrescriptions", null);
-__decorate([
-    (0, common_1.Patch)('prescriptions/:id/dispense'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Patch)('prescriptions/:id/dispense'),
+    (0, _common.HttpCode)(_common.HttpStatus.OK),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "dispensePrescription", null);
-__decorate([
-    (0, common_1.Get)('medicines'),
-    __param(0, (0, common_1.Query)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.MedicineQueryDto]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('medicines'),
+    _ts_param(0, (0, _common.Query)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.MedicineQueryDto === "undefined" ? Object : _dto.MedicineQueryDto
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "listMedicines", null);
-__decorate([
-    (0, common_1.Post)('medicines'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
-    __param(0, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.AddMedicineDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Post)('medicines'),
+    (0, _common.HttpCode)(_common.HttpStatus.CREATED),
+    _ts_param(0, (0, _common.Body)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.AddMedicineDto === "undefined" ? Object : _dto.AddMedicineDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "addMedicine", null);
-__decorate([
-    (0, common_1.Put)('medicines/:id'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, dto_1.UpdateMedicineDto]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Put)('medicines/:id'),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_param(1, (0, _common.Body)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        typeof _dto.UpdateMedicineDto === "undefined" ? Object : _dto.UpdateMedicineDto
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "updateMedicine", null);
-__decorate([
-    (0, common_1.Get)('inventory'),
-    __param(0, (0, common_1.Query)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.InventoryQueryDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('inventory'),
+    _ts_param(0, (0, _common.Query)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.InventoryQueryDto === "undefined" ? Object : _dto.InventoryQueryDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "listInventory", null);
-__decorate([
-    (0, common_1.Get)('inventory/alerts'),
-    __param(0, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('inventory/alerts'),
+    _ts_param(0, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "getInventoryAlerts", null);
-__decorate([
-    (0, common_1.Post)('purchases'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
-    __param(0, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.RecordPurchaseDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Post)('purchases'),
+    (0, _common.HttpCode)(_common.HttpStatus.CREATED),
+    _ts_param(0, (0, _common.Body)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.RecordPurchaseDto === "undefined" ? Object : _dto.RecordPurchaseDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "recordPurchase", null);
-__decorate([
-    (0, common_1.Get)('purchases'),
-    __param(0, (0, common_1.Query)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.PurchaseQueryDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('purchases'),
+    _ts_param(0, (0, _common.Query)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.PurchaseQueryDto === "undefined" ? Object : _dto.PurchaseQueryDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "listPurchases", null);
-__decorate([
-    (0, common_1.Get)('reports/daily'),
-    __param(0, (0, common_1.Query)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.ReportQueryDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('reports/daily'),
+    _ts_param(0, (0, _common.Query)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.ReportQueryDto === "undefined" ? Object : _dto.ReportQueryDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "getDailyReport", null);
-__decorate([
-    (0, common_1.Get)('reports/top-medicines'),
-    __param(0, (0, common_1.Query)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.ReportQueryDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('reports/top-medicines'),
+    _ts_param(0, (0, _common.Query)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.ReportQueryDto === "undefined" ? Object : _dto.ReportQueryDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "getTopMedicines", null);
-__decorate([
-    (0, common_1.Get)('reports/weekly-summary'),
-    __param(0, (0, common_1.Query)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.ReportQueryDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('reports/weekly-summary'),
+    _ts_param(0, (0, _common.Query)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.ReportQueryDto === "undefined" ? Object : _dto.ReportQueryDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "getWeeklySummary", null);
-__decorate([
-    (0, common_1.Get)('reports/payment-breakdown'),
-    __param(0, (0, common_1.Query)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.ReportQueryDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('reports/payment-breakdown'),
+    _ts_param(0, (0, _common.Query)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.ReportQueryDto === "undefined" ? Object : _dto.ReportQueryDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "getPaymentBreakdown", null);
-__decorate([
-    (0, common_1.Post)('sales/prescription-checkout'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    __param(0, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.PrescriptionCheckoutDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Post)('sales/prescription-checkout'),
+    (0, _common.HttpCode)(_common.HttpStatus.OK),
+    _ts_param(0, (0, _common.Body)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.PrescriptionCheckoutDto === "undefined" ? Object : _dto.PrescriptionCheckoutDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "prescriptionCheckout", null);
-__decorate([
-    (0, common_1.Post)('sales'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
-    __param(0, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_2.CreateSaleDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Post)('sales'),
+    (0, _common.HttpCode)(_common.HttpStatus.CREATED),
+    _ts_param(0, (0, _common.Body)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto1.CreateSaleDto === "undefined" ? Object : _dto1.CreateSaleDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "createSale", null);
-__decorate([
-    (0, common_1.Get)('sales'),
-    __param(0, (0, common_1.Query)('page')),
-    __param(1, (0, common_1.Query)('limit')),
-    __param(2, (0, common_1.Query)('startDate')),
-    __param(3, (0, common_1.Query)('endDate')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('sales'),
+    _ts_param(0, (0, _common.Query)('page')),
+    _ts_param(1, (0, _common.Query)('limit')),
+    _ts_param(2, (0, _common.Query)('startDate')),
+    _ts_param(3, (0, _common.Query)('endDate')),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        String,
+        String,
+        String
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "listSales", null);
-__decorate([
-    (0, common_1.Get)('sales/:id'),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('sales/:id'),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "getSaleDetail", null);
-__decorate([
-    (0, common_1.Get)('sales/:id/invoice'),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('sales/:id/invoice'),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "getInvoice", null);
-__decorate([
-    (0, common_1.Post)('sales/:id/send-bill'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Post)('sales/:id/send-bill'),
+    (0, _common.HttpCode)(_common.HttpStatus.OK),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PharmacyController.prototype, "sendBillToPatient", null);
-exports.PharmacyController = PharmacyController = __decorate([
-    (0, common_1.Controller)('pharmacy'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(client_1.Role.PHARMACY),
-    __metadata("design:paramtypes", [pharmacy_service_1.PharmacyService])
+PharmacyController = _ts_decorate([
+    (0, _common.Controller)('pharmacy'),
+    (0, _common.UseGuards)(_jwtauthguard.JwtAuthGuard, _rolesguard.RolesGuard),
+    (0, _rolesdecorator.Roles)(_client.Role.PHARMACY),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _pharmacyservice.PharmacyService === "undefined" ? Object : _pharmacyservice.PharmacyService
+    ])
 ], PharmacyController);
+
 //# sourceMappingURL=pharmacy.controller.js.map

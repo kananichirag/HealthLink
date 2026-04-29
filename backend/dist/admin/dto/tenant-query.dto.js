@@ -1,48 +1,55 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "TenantQueryDto", {
+    enumerable: true,
+    get: function() {
+        return TenantQueryDto;
+    }
+});
+const _classvalidator = require("class-validator");
+const _classtransformer = require("class-transformer");
+const _client = require("@prisma/client");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.TenantQueryDto = void 0;
-const class_validator_1 = require("class-validator");
-const class_transformer_1 = require("class-transformer");
-const client_1 = require("@prisma/client");
-class TenantQueryDto {
-    page = 1;
-    limit = 10;
-    search;
-    type;
 }
-exports.TenantQueryDto = TenantQueryDto;
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Type)(() => Number),
-    (0, class_validator_1.IsInt)(),
-    (0, class_validator_1.Min)(1),
-    __metadata("design:type", Number)
+function _ts_metadata(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+let TenantQueryDto = class TenantQueryDto {
+    constructor(){
+        this.page = 1;
+        this.limit = 10;
+    }
+};
+_ts_decorate([
+    (0, _classvalidator.IsOptional)(),
+    (0, _classtransformer.Type)(()=>Number),
+    (0, _classvalidator.IsInt)(),
+    (0, _classvalidator.Min)(1),
+    _ts_metadata("design:type", Number)
 ], TenantQueryDto.prototype, "page", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Type)(() => Number),
-    (0, class_validator_1.IsInt)(),
-    (0, class_validator_1.Min)(1),
-    (0, class_validator_1.Max)(100),
-    __metadata("design:type", Number)
+_ts_decorate([
+    (0, _classvalidator.IsOptional)(),
+    (0, _classtransformer.Type)(()=>Number),
+    (0, _classvalidator.IsInt)(),
+    (0, _classvalidator.Min)(1),
+    (0, _classvalidator.Max)(100),
+    _ts_metadata("design:type", Number)
 ], TenantQueryDto.prototype, "limit", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
+_ts_decorate([
+    (0, _classvalidator.IsOptional)(),
+    (0, _classvalidator.IsString)(),
+    _ts_metadata("design:type", String)
 ], TenantQueryDto.prototype, "search", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(client_1.TenantType),
-    __metadata("design:type", String)
+_ts_decorate([
+    (0, _classvalidator.IsOptional)(),
+    (0, _classvalidator.IsEnum)(_client.TenantType),
+    _ts_metadata("design:type", typeof _client.TenantType === "undefined" ? Object : _client.TenantType)
 ], TenantQueryDto.prototype, "type", void 0);
+
 //# sourceMappingURL=tenant-query.dto.js.map

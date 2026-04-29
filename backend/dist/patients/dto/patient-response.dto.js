@@ -1,25 +1,24 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.PaginatedPatientsResponseDto = exports.PatientResponseDto = void 0;
-class PatientResponseDto {
-    id;
-    name;
-    age;
-    gender;
-    medicalHistory;
-    createdBy;
-    createdAt;
-    updatedAt;
-    creator;
-    ageGroup;
-    recordAge;
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
 }
-exports.PatientResponseDto = PatientResponseDto;
-class PaginatedPatientsResponseDto {
-    data;
-    total;
-    page;
-    limit;
-}
-exports.PaginatedPatientsResponseDto = PaginatedPatientsResponseDto;
+_export(exports, {
+    get PaginatedPatientsResponseDto () {
+        return PaginatedPatientsResponseDto;
+    },
+    get PatientResponseDto () {
+        return PatientResponseDto;
+    }
+});
+let PatientResponseDto = class PatientResponseDto {
+};
+let PaginatedPatientsResponseDto = class PaginatedPatientsResponseDto {
+};
+
 //# sourceMappingURL=patient-response.dto.js.map

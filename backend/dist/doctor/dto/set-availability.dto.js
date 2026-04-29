@@ -1,46 +1,62 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get AvailabilitySlotDto () {
+        return AvailabilitySlotDto;
+    },
+    get SetAvailabilityDto () {
+        return SetAvailabilityDto;
+    }
+});
+const _classvalidator = require("class-validator");
+const _classtransformer = require("class-transformer");
+const _client = require("@prisma/client");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
+}
+function _ts_metadata(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+let AvailabilitySlotDto = class AvailabilitySlotDto {
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SetAvailabilityDto = exports.AvailabilitySlotDto = void 0;
-const class_validator_1 = require("class-validator");
-const class_transformer_1 = require("class-transformer");
-const client_1 = require("@prisma/client");
-class AvailabilitySlotDto {
-    dayOfWeek;
-    startTime;
-    endTime;
-}
-exports.AvailabilitySlotDto = AvailabilitySlotDto;
-__decorate([
-    (0, class_validator_1.IsEnum)(client_1.DayOfWeek),
-    __metadata("design:type", String)
+_ts_decorate([
+    (0, _classvalidator.IsEnum)(_client.DayOfWeek),
+    _ts_metadata("design:type", typeof _client.DayOfWeek === "undefined" ? Object : _client.DayOfWeek)
 ], AvailabilitySlotDto.prototype, "dayOfWeek", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.Matches)(/^\d{2}:\d{2}$/, { message: 'startTime must be in HH:mm format' }),
-    __metadata("design:type", String)
+_ts_decorate([
+    (0, _classvalidator.IsString)(),
+    (0, _classvalidator.Matches)(/^\d{2}:\d{2}$/, {
+        message: 'startTime must be in HH:mm format'
+    }),
+    _ts_metadata("design:type", String)
 ], AvailabilitySlotDto.prototype, "startTime", void 0);
-__decorate([
-    (0, class_validator_1.IsString)(),
-    (0, class_validator_1.Matches)(/^\d{2}:\d{2}$/, { message: 'endTime must be in HH:mm format' }),
-    __metadata("design:type", String)
+_ts_decorate([
+    (0, _classvalidator.IsString)(),
+    (0, _classvalidator.Matches)(/^\d{2}:\d{2}$/, {
+        message: 'endTime must be in HH:mm format'
+    }),
+    _ts_metadata("design:type", String)
 ], AvailabilitySlotDto.prototype, "endTime", void 0);
-class SetAvailabilityDto {
-    slots;
-}
-exports.SetAvailabilityDto = SetAvailabilityDto;
-__decorate([
-    (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.ValidateNested)({ each: true }),
-    (0, class_transformer_1.Type)(() => AvailabilitySlotDto),
-    __metadata("design:type", Array)
+let SetAvailabilityDto = class SetAvailabilityDto {
+};
+_ts_decorate([
+    (0, _classvalidator.IsArray)(),
+    (0, _classvalidator.ValidateNested)({
+        each: true
+    }),
+    (0, _classtransformer.Type)(()=>AvailabilitySlotDto),
+    _ts_metadata("design:type", Array)
 ], SetAvailabilityDto.prototype, "slots", void 0);
+
 //# sourceMappingURL=set-availability.dto.js.map

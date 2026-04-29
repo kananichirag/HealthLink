@@ -1,14 +1,36 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.TENANT_SCOPED_MODELS = void 0;
-exports.getActiveTenantId = getActiveTenantId;
-exports.isTenantScopedModel = isTenantScopedModel;
-exports.injectTenantWhere = injectTenantWhere;
-exports.injectTenantData = injectTenantData;
-exports.createTenantExtension = createTenantExtension;
-const client_1 = require("@prisma/client");
-const tenant_context_1 = require("./tenant-context");
-exports.TENANT_SCOPED_MODELS = new Set([
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get TENANT_SCOPED_MODELS () {
+        return TENANT_SCOPED_MODELS;
+    },
+    get createTenantExtension () {
+        return createTenantExtension;
+    },
+    get getActiveTenantId () {
+        return getActiveTenantId;
+    },
+    get injectTenantData () {
+        return injectTenantData;
+    },
+    get injectTenantWhere () {
+        return injectTenantWhere;
+    },
+    get isTenantScopedModel () {
+        return isTenantScopedModel;
+    }
+});
+const _client = require("@prisma/client");
+const _tenantcontext = require("./tenant-context");
+const TENANT_SCOPED_MODELS = new Set([
     'User',
     'Patient',
     'Medicine',
@@ -24,29 +46,38 @@ exports.TENANT_SCOPED_MODELS = new Set([
     'Appointment',
     'DoctorSchedule',
     'BlockedDate',
-    'PurchaseRecord',
+    'PurchaseRecord'
 ]);
 function getActiveTenantId() {
-    const { tenantId, role } = (0, tenant_context_1.getTenantContext)();
+    const { tenantId, role } = (0, _tenantcontext.getTenantContext)();
+    // Skip tenant filtering if:
+    // 1. No tenant context (unauthenticated or system-level operation)
+    // 2. User is Admin (cross-tenant access)
     if (!tenantId || role === 'ADMIN') {
         return null;
     }
     return tenantId;
 }
 function isTenantScopedModel(model) {
-    return exports.TENANT_SCOPED_MODELS.has(model);
+    return TENANT_SCOPED_MODELS.has(model);
 }
 function injectTenantWhere(where, tenantId) {
-    return { ...where, tenantId };
+    return {
+        ...where,
+        tenantId
+    };
 }
 function injectTenantData(data, tenantId) {
-    return { ...data, tenantId };
+    return {
+        ...data,
+        tenantId
+    };
 }
 function createTenantExtension() {
-    return client_1.Prisma.defineExtension({
+    return _client.Prisma.defineExtension({
         name: 'tenant-isolation',
         query: {
-            $allOperations({ model, operation, args, query }) {
+            $allOperations ({ model, operation, args, query }) {
                 if (!model || !isTenantScopedModel(model)) {
                     return query(args);
                 }
@@ -54,35 +85,52 @@ function createTenantExtension() {
                 if (!tenantId) {
                     return query(args);
                 }
+                // Read operations: inject tenantId into WHERE
                 const readOps = [
-                    'findMany', 'findFirst', 'findUnique',
-                    'findFirstOrThrow', 'findUniqueOrThrow',
-                    'count', 'aggregate', 'groupBy',
+                    'findMany',
+                    'findFirst',
+                    'findUnique',
+                    'findFirstOrThrow',
+                    'findUniqueOrThrow',
+                    'count',
+                    'aggregate',
+                    'groupBy'
                 ];
                 if (readOps.includes(operation)) {
                     args.where = injectTenantWhere(args.where ?? {}, tenantId);
                     return query(args);
                 }
-                const singleMutateOps = ['update', 'delete'];
+                // Single-record mutations: inject tenantId into WHERE
+                const singleMutateOps = [
+                    'update',
+                    'delete'
+                ];
                 if (singleMutateOps.includes(operation)) {
                     args.where = injectTenantWhere(args.where ?? {}, tenantId);
                     return query(args);
                 }
-                const bulkMutateOps = ['updateMany', 'deleteMany'];
+                // Bulk mutations: inject tenantId into WHERE
+                const bulkMutateOps = [
+                    'updateMany',
+                    'deleteMany'
+                ];
                 if (bulkMutateOps.includes(operation)) {
                     args.where = injectTenantWhere(args.where ?? {}, tenantId);
                     return query(args);
                 }
+                // Create: inject tenantId into data
                 if (operation === 'create') {
                     args.data = injectTenantData(args.data ?? {}, tenantId);
                     return query(args);
                 }
+                // CreateMany: inject tenantId into each record
                 if (operation === 'createMany') {
                     if (Array.isArray(args.data)) {
-                        args.data = args.data.map((record) => injectTenantData(record, tenantId));
+                        args.data = args.data.map((record)=>injectTenantData(record, tenantId));
                     }
                     return query(args);
                 }
+                // Upsert: inject tenantId into WHERE and create data
                 if (operation === 'upsert') {
                     args.where = injectTenantWhere(args.where ?? {}, tenantId);
                     if (args.create) {
@@ -91,8 +139,9 @@ function createTenantExtension() {
                     return query(args);
                 }
                 return query(args);
-            },
-        },
+            }
+        }
     });
 }
+
 //# sourceMappingURL=prisma-tenant.middleware.js.map

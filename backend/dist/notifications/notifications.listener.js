@@ -1,64 +1,66 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "NotificationsListener", {
+    enumerable: true,
+    get: function() {
+        return NotificationsListener;
+    }
+});
+const _common = require("@nestjs/common");
+const _eventemitter = require("@nestjs/event-emitter");
+const _prismaservice = require("../prisma/prisma.service");
+const _notificationsservice = require("./notifications.service");
+const _emailservice = require("./email.service");
+const _prescriptionevents = require("../prescriptions/events/prescription.events");
+const _orderevents = require("../orders/events/order.events");
+const _paymentevents = require("../payments/events/payment.events");
+const _expirycheckscheduler = require("./scheduler/expiry-check.scheduler");
+const _client = require("@prisma/client");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
+}
+function _ts_metadata(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var NotificationsListener_1;
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.NotificationsListener = void 0;
-const common_1 = require("@nestjs/common");
-const event_emitter_1 = require("@nestjs/event-emitter");
-const prisma_service_1 = require("../prisma/prisma.service");
-const notifications_service_1 = require("./notifications.service");
-const email_service_1 = require("./email.service");
-const prescription_events_1 = require("../prescriptions/events/prescription.events");
-const order_events_1 = require("../orders/events/order.events");
-const payment_events_1 = require("../payments/events/payment.events");
-const expiry_check_scheduler_1 = require("./scheduler/expiry-check.scheduler");
-const client_1 = require("@prisma/client");
+}
 const LOW_STOCK_THRESHOLD = 10;
-let NotificationsListener = NotificationsListener_1 = class NotificationsListener {
-    prisma;
-    notificationsService;
-    emailService;
-    logger = new common_1.Logger(NotificationsListener_1.name);
-    constructor(prisma, notificationsService, emailService) {
-        this.prisma = prisma;
-        this.notificationsService = notificationsService;
-        this.emailService = emailService;
-    }
+let NotificationsListener = class NotificationsListener {
     async handlePrescriptionCreated(payload) {
         try {
-            for (const medicine of payload.medicines) {
+            // Check for low stock medicines
+            for (const medicine of payload.medicines){
                 if (medicine.newQuantity < LOW_STOCK_THRESHOLD) {
                     await this.notifyAdminsAndPharmacies('LOW_STOCK', `Low stock alert: "${medicine.name}" has only ${medicine.newQuantity} units remaining.`, `Low Stock Alert: ${medicine.name}`, `The medicine "${medicine.name}" is running low. Current stock: ${medicine.newQuantity} units.`);
                 }
             }
-        }
-        catch (error) {
+        } catch (error) {
             this.logger.error(`Error handling prescription.created event: ${error.message}`, error.stack);
         }
     }
     async handleOrderStatusUpdated(payload) {
         try {
             if (payload.newStatus === 'SHIPPED' || payload.newStatus === 'DELIVERED') {
-                const message = payload.trackingInfo
-                    ? `Your order has been ${payload.newStatus.toLowerCase()}. Tracking: ${payload.trackingInfo}`
-                    : `Your order has been ${payload.newStatus.toLowerCase()}.`;
+                const message = payload.trackingInfo ? `Your order has been ${payload.newStatus.toLowerCase()}. Tracking: ${payload.trackingInfo}` : `Your order has been ${payload.newStatus.toLowerCase()}.`;
+                // Find patient's user account for email
                 const patient = await this.prisma.patient.findUnique({
-                    where: { id: payload.patientId },
-                    select: { name: true },
+                    where: {
+                        id: payload.patientId
+                    },
+                    select: {
+                        name: true
+                    }
                 });
+                // Create in-app notification for the patient's user
+                // Note: patientId here is the Patient record id; we need to find associated user
+                // For now, we store notification with patientId as userId (they may differ)
                 await this.notificationsService.create(payload.patientId, 'ORDER_UPDATE', message);
                 this.logger.log(`Order update notification created for patient ${payload.patientId}`);
             }
-        }
-        catch (error) {
+        } catch (error) {
             this.logger.error(`Error handling order.status.updated event: ${error.message}`, error.stack);
         }
     }
@@ -67,15 +69,20 @@ let NotificationsListener = NotificationsListener_1 = class NotificationsListene
             const statusText = payload.newStatus === 'SUCCEEDED' ? 'successful' : 'failed';
             const message = `Your payment of ${payload.amount / 100} ${payload.currency} was ${statusText}.`;
             await this.notificationsService.create(payload.userId, 'PAYMENT_UPDATE', message);
+            // Send email
             const user = await this.prisma.user.findUnique({
-                where: { id: payload.userId },
-                select: { email: true, name: true },
+                where: {
+                    id: payload.userId
+                },
+                select: {
+                    email: true,
+                    name: true
+                }
             });
             if (user) {
                 await this.emailService.sendMail(user.email, `Payment ${statusText.charAt(0).toUpperCase() + statusText.slice(1)}`, `Dear ${user.name},\n\n${message}\n\nThank you for using our platform.`);
             }
-        }
-        catch (error) {
+        } catch (error) {
             this.logger.error(`Error handling payment.status.updated event: ${error.message}`, error.stack);
         }
     }
@@ -83,51 +90,78 @@ let NotificationsListener = NotificationsListener_1 = class NotificationsListene
         try {
             const expiryDateStr = payload.expiryDate.toLocaleDateString();
             await this.notifyAdminsAndPharmacies('EXPIRY_WARNING', `Expiry warning: "${payload.name}" expires on ${expiryDateStr}.`, `Medicine Expiry Warning: ${payload.name}`, `The medicine "${payload.name}" is expiring on ${expiryDateStr}. Please take action.`);
-        }
-        catch (error) {
+        } catch (error) {
             this.logger.error(`Error handling inventory.expiry_warning event: ${error.message}`, error.stack);
         }
     }
     async notifyAdminsAndPharmacies(type, inAppMessage, emailSubject, emailBody) {
         const users = await this.prisma.user.findMany({
-            where: { role: { in: [client_1.Role.ADMIN, client_1.Role.PHARMACY] } },
-            select: { id: true, email: true, name: true },
+            where: {
+                role: {
+                    in: [
+                        _client.Role.ADMIN,
+                        _client.Role.PHARMACY
+                    ]
+                }
+            },
+            select: {
+                id: true,
+                email: true,
+                name: true
+            }
         });
-        await Promise.all(users.map(async (user) => {
+        await Promise.all(users.map(async (user)=>{
             await this.notificationsService.create(user.id, type, inAppMessage);
             await this.emailService.sendMail(user.email, emailSubject, `Dear ${user.name},\n\n${emailBody}\n\nThank you.`);
         }));
     }
+    constructor(prisma, notificationsService, emailService){
+        this.prisma = prisma;
+        this.notificationsService = notificationsService;
+        this.emailService = emailService;
+        this.logger = new _common.Logger(NotificationsListener.name);
+    }
 };
-exports.NotificationsListener = NotificationsListener;
-__decorate([
-    (0, event_emitter_1.OnEvent)(prescription_events_1.PRESCRIPTION_CREATED),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _eventemitter.OnEvent)(_prescriptionevents.PRESCRIPTION_CREATED),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof PrescriptionCreatedPayload === "undefined" ? Object : PrescriptionCreatedPayload
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], NotificationsListener.prototype, "handlePrescriptionCreated", null);
-__decorate([
-    (0, event_emitter_1.OnEvent)(order_events_1.ORDER_STATUS_UPDATED),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _eventemitter.OnEvent)(_orderevents.ORDER_STATUS_UPDATED),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof OrderStatusUpdatedPayload === "undefined" ? Object : OrderStatusUpdatedPayload
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], NotificationsListener.prototype, "handleOrderStatusUpdated", null);
-__decorate([
-    (0, event_emitter_1.OnEvent)(payment_events_1.PAYMENT_STATUS_UPDATED),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _eventemitter.OnEvent)(_paymentevents.PAYMENT_STATUS_UPDATED),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof PaymentStatusUpdatedPayload === "undefined" ? Object : PaymentStatusUpdatedPayload
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], NotificationsListener.prototype, "handlePaymentStatusUpdated", null);
-__decorate([
-    (0, event_emitter_1.OnEvent)(expiry_check_scheduler_1.INVENTORY_EXPIRY_WARNING),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _eventemitter.OnEvent)(_expirycheckscheduler.INVENTORY_EXPIRY_WARNING),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof ExpiryWarningPayload === "undefined" ? Object : ExpiryWarningPayload
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], NotificationsListener.prototype, "handleExpiryWarning", null);
-exports.NotificationsListener = NotificationsListener = NotificationsListener_1 = __decorate([
-    (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        notifications_service_1.NotificationsService,
-        email_service_1.EmailService])
+NotificationsListener = _ts_decorate([
+    (0, _common.Injectable)(),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _prismaservice.PrismaService === "undefined" ? Object : _prismaservice.PrismaService,
+        typeof _notificationsservice.NotificationsService === "undefined" ? Object : _notificationsservice.NotificationsService,
+        typeof _emailservice.EmailService === "undefined" ? Object : _emailservice.EmailService
+    ])
 ], NotificationsListener);
+
 //# sourceMappingURL=notifications.listener.js.map

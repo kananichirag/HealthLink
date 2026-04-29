@@ -1,85 +1,90 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "InventoryService", {
+    enumerable: true,
+    get: function() {
+        return InventoryService;
+    }
+});
+const _common = require("@nestjs/common");
+const _prismaservice = require("../prisma/prisma.service");
+const _dto = require("./dto");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
+}
+function _ts_metadata(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var InventoryService_1;
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.InventoryService = void 0;
-const common_1 = require("@nestjs/common");
-const prisma_service_1 = require("../prisma/prisma.service");
-const dto_1 = require("./dto");
-let InventoryService = InventoryService_1 = class InventoryService {
-    prisma;
-    logger = new common_1.Logger(InventoryService_1.name);
-    LOW_STOCK_THRESHOLD = 10;
-    EXPIRY_WARNING_DAYS = 30;
-    constructor(prisma) {
-        this.prisma = prisma;
-    }
+}
+let InventoryService = class InventoryService {
     async createMedicine(createMedicineDto) {
         try {
             this.logger.log(`Creating medicine: ${createMedicineDto.name}, batch: ${createMedicineDto.batchNumber}`);
+            // Validate expiry date is in the future
             const expiryDate = new Date(createMedicineDto.expiryDate);
             const now = new Date();
             if (expiryDate <= now) {
-                throw new common_1.BadRequestException('Expiry date must be in the future');
+                throw new _common.BadRequestException('Expiry date must be in the future');
             }
+            // Sanitize text inputs
             const sanitizedData = {
                 ...createMedicineDto,
                 name: this.sanitizeText(createMedicineDto.name),
                 batchNumber: this.sanitizeText(createMedicineDto.batchNumber),
                 supplier: this.sanitizeText(createMedicineDto.supplier),
-                expiryDate,
+                expiryDate
             };
             const medicine = await this.prisma.medicine.create({
-                data: sanitizedData,
+                data: sanitizedData
             });
             return this.transformToResponseDto(medicine);
-        }
-        catch (error) {
+        } catch (error) {
             if (error.code === 'P2002' && error.meta?.target?.includes('batchNumber')) {
-                throw new common_1.ConflictException('Batch number already exists');
+                throw new _common.ConflictException('Batch number already exists');
             }
-            if (error instanceof common_1.BadRequestException) {
+            if (error instanceof _common.BadRequestException) {
                 throw error;
             }
             this.logger.error(`Failed to create medicine: ${error.message}`, error.stack);
-            throw new common_1.BadRequestException('Failed to create medicine');
+            throw new _common.BadRequestException('Failed to create medicine');
         }
     }
     async findMedicineById(id) {
         try {
             const medicine = await this.prisma.medicine.findUnique({
-                where: { id },
+                where: {
+                    id
+                }
             });
             if (!medicine) {
-                throw new common_1.NotFoundException(`Medicine with ID ${id} not found`);
+                throw new _common.NotFoundException(`Medicine with ID ${id} not found`);
             }
             return this.transformToResponseDto(medicine);
-        }
-        catch (error) {
-            if (error instanceof common_1.NotFoundException) {
+        } catch (error) {
+            if (error instanceof _common.NotFoundException) {
                 throw error;
             }
             this.logger.error(`Failed to find medicine by ID ${id}: ${error.message}`, error.stack);
-            throw new common_1.BadRequestException('Failed to retrieve medicine');
+            throw new _common.BadRequestException('Failed to retrieve medicine');
         }
     }
     async updateMedicine(id, updateMedicineDto) {
         try {
             this.logger.log(`Updating medicine: ${id}`);
+            // Check if medicine exists
             const existingMedicine = await this.prisma.medicine.findUnique({
-                where: { id },
+                where: {
+                    id
+                }
             });
             if (!existingMedicine) {
-                throw new common_1.NotFoundException(`Medicine with ID ${id} not found`);
+                throw new _common.NotFoundException(`Medicine with ID ${id} not found`);
             }
+            // Sanitize text inputs
             const sanitizedData = {};
             if (updateMedicineDto.name) {
                 sanitizedData.name = this.sanitizeText(updateMedicineDto.name);
@@ -97,114 +102,152 @@ let InventoryService = InventoryService_1 = class InventoryService {
                 sanitizedData.quantity = updateMedicineDto.quantity;
             }
             const medicine = await this.prisma.medicine.update({
-                where: { id },
-                data: sanitizedData,
+                where: {
+                    id
+                },
+                data: sanitizedData
             });
             return this.transformToResponseDto(medicine);
-        }
-        catch (error) {
-            if (error instanceof common_1.NotFoundException) {
+        } catch (error) {
+            if (error instanceof _common.NotFoundException) {
                 throw error;
             }
             if (error.code === 'P2002' && error.meta?.target?.includes('batchNumber')) {
-                throw new common_1.ConflictException('Batch number already exists');
+                throw new _common.ConflictException('Batch number already exists');
             }
             this.logger.error(`Failed to update medicine ${id}: ${error.message}`, error.stack);
-            throw new common_1.BadRequestException('Failed to update medicine');
+            throw new _common.BadRequestException('Failed to update medicine');
         }
     }
     async deleteMedicine(id) {
         try {
             this.logger.log(`Deleting medicine: ${id}`);
             const existingMedicine = await this.prisma.medicine.findUnique({
-                where: { id },
+                where: {
+                    id
+                }
             });
             if (!existingMedicine) {
-                throw new common_1.NotFoundException(`Medicine with ID ${id} not found`);
+                throw new _common.NotFoundException(`Medicine with ID ${id} not found`);
             }
             await this.prisma.medicine.delete({
-                where: { id },
+                where: {
+                    id
+                }
             });
             this.logger.log(`Successfully deleted medicine: ${id}`);
-        }
-        catch (error) {
-            if (error instanceof common_1.NotFoundException) {
+        } catch (error) {
+            if (error instanceof _common.NotFoundException) {
                 throw error;
             }
             this.logger.error(`Failed to delete medicine ${id}: ${error.message}`, error.stack);
-            throw new common_1.BadRequestException('Failed to delete medicine');
+            throw new _common.BadRequestException('Failed to delete medicine');
         }
     }
     async findAllMedicines(filterDto) {
         try {
             const { page = 1, limit = 10, search, stockStatus, expiryStatus } = filterDto;
             const skip = (page - 1) * limit;
+            // Build search conditions
             const where = {};
             if (search) {
                 where.OR = [
-                    { name: { contains: search, mode: 'insensitive' } },
-                    { batchNumber: { contains: search, mode: 'insensitive' } },
-                    { supplier: { contains: search, mode: 'insensitive' } },
+                    {
+                        name: {
+                            contains: search,
+                            mode: 'insensitive'
+                        }
+                    },
+                    {
+                        batchNumber: {
+                            contains: search,
+                            mode: 'insensitive'
+                        }
+                    },
+                    {
+                        supplier: {
+                            contains: search,
+                            mode: 'insensitive'
+                        }
+                    }
                 ];
             }
-            if (stockStatus === dto_1.StockStatus.LOW) {
-                where.quantity = { lt: this.LOW_STOCK_THRESHOLD };
+            // Apply stock status filter
+            if (stockStatus === _dto.StockStatus.LOW) {
+                where.quantity = {
+                    lt: this.LOW_STOCK_THRESHOLD
+                };
+            } else if (stockStatus === _dto.StockStatus.NORMAL) {
+                where.quantity = {
+                    gte: this.LOW_STOCK_THRESHOLD
+                };
             }
-            else if (stockStatus === dto_1.StockStatus.NORMAL) {
-                where.quantity = { gte: this.LOW_STOCK_THRESHOLD };
-            }
+            // Apply expiry status filter
             const now = new Date();
             const expiryThreshold = new Date();
             expiryThreshold.setDate(now.getDate() + this.EXPIRY_WARNING_DAYS);
-            if (expiryStatus === dto_1.ExpiryStatus.EXPIRED) {
-                where.expiryDate = { lt: now };
+            if (expiryStatus === _dto.ExpiryStatus.EXPIRED) {
+                where.expiryDate = {
+                    lt: now
+                };
+            } else if (expiryStatus === _dto.ExpiryStatus.EXPIRING) {
+                where.expiryDate = {
+                    gte: now,
+                    lt: expiryThreshold
+                };
+            } else if (expiryStatus === _dto.ExpiryStatus.NORMAL) {
+                where.expiryDate = {
+                    gte: expiryThreshold
+                };
             }
-            else if (expiryStatus === dto_1.ExpiryStatus.EXPIRING) {
-                where.expiryDate = { gte: now, lt: expiryThreshold };
-            }
-            else if (expiryStatus === dto_1.ExpiryStatus.NORMAL) {
-                where.expiryDate = { gte: expiryThreshold };
-            }
+            // Get total count and medicines in parallel
             const [total, medicines] = await Promise.all([
-                this.prisma.medicine.count({ where }),
+                this.prisma.medicine.count({
+                    where
+                }),
                 this.prisma.medicine.findMany({
                     where,
                     skip,
                     take: limit,
-                    orderBy: { createdAt: 'desc' },
-                }),
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                })
             ]);
+            // Calculate inventory statistics
             const stats = await this.calculateInventoryStats();
-            const transformedMedicines = medicines.map(medicine => this.transformToResponseDto(medicine));
+            const transformedMedicines = medicines.map((medicine)=>this.transformToResponseDto(medicine));
             return {
                 data: transformedMedicines,
                 total,
                 page,
                 limit,
-                stats,
+                stats
             };
-        }
-        catch (error) {
+        } catch (error) {
             this.logger.error(`Failed to retrieve medicines: ${error.message}`, error.stack);
-            throw new common_1.BadRequestException('Failed to retrieve medicines');
+            throw new _common.BadRequestException('Failed to retrieve medicines');
         }
     }
     async bulkUpdateStock(bulkUpdateDto) {
         try {
             this.logger.log(`Bulk updating stock for ${bulkUpdateDto.updates.length} medicines`);
-            await this.prisma.$transaction(async (prisma) => {
-                for (const update of bulkUpdateDto.updates) {
+            await this.prisma.$transaction(async (prisma)=>{
+                for (const update of bulkUpdateDto.updates){
                     await prisma.medicine.update({
-                        where: { id: update.id },
-                        data: { quantity: update.quantity },
+                        where: {
+                            id: update.id
+                        },
+                        data: {
+                            quantity: update.quantity
+                        }
                     });
                 }
             });
             this.logger.log('Bulk stock update completed successfully');
-        }
-        catch (error) {
+        } catch (error) {
             this.logger.error(`Failed to bulk update stock: ${error.message}`, error.stack);
-            throw new common_1.BadRequestException('Failed to update stock levels');
+            throw new _common.BadRequestException('Failed to update stock levels');
         }
     }
     async calculateInventoryStats() {
@@ -213,17 +256,35 @@ let InventoryService = InventoryService_1 = class InventoryService {
         expiryThreshold.setDate(now.getDate() + this.EXPIRY_WARNING_DAYS);
         const [lowStock, expiring, expired, total] = await Promise.all([
             this.prisma.medicine.count({
-                where: { quantity: { lt: this.LOW_STOCK_THRESHOLD } },
+                where: {
+                    quantity: {
+                        lt: this.LOW_STOCK_THRESHOLD
+                    }
+                }
             }),
             this.prisma.medicine.count({
-                where: { expiryDate: { gte: now, lt: expiryThreshold } },
+                where: {
+                    expiryDate: {
+                        gte: now,
+                        lt: expiryThreshold
+                    }
+                }
             }),
             this.prisma.medicine.count({
-                where: { expiryDate: { lt: now } },
+                where: {
+                    expiryDate: {
+                        lt: now
+                    }
+                }
             }),
-            this.prisma.medicine.count(),
+            this.prisma.medicine.count()
         ]);
-        return { lowStock, expiring, expired, total };
+        return {
+            lowStock,
+            expiring,
+            expired,
+            total
+        };
     }
     transformToResponseDto(medicine) {
         const stockStatus = this.calculateStockStatus(medicine.quantity);
@@ -242,7 +303,7 @@ let InventoryService = InventoryService_1 = class InventoryService {
             stockStatus,
             expiryStatus,
             daysUntilExpiry,
-            isActive,
+            isActive
         };
     }
     calculateStockStatus(quantity) {
@@ -252,10 +313,8 @@ let InventoryService = InventoryService_1 = class InventoryService {
         const now = new Date();
         const expiryThreshold = new Date();
         expiryThreshold.setDate(now.getDate() + this.EXPIRY_WARNING_DAYS);
-        if (expiryDate < now)
-            return 'EXPIRED';
-        if (expiryDate < expiryThreshold)
-            return 'EXPIRING';
+        if (expiryDate < now) return 'EXPIRED';
+        if (expiryDate < expiryThreshold) return 'EXPIRING';
         return 'NORMAL';
     }
     calculateDaysUntilExpiry(expiryDate) {
@@ -264,16 +323,24 @@ let InventoryService = InventoryService_1 = class InventoryService {
         return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
     sanitizeText(text) {
-        return text
-            .trim()
-            .replace(/[<>]/g, '')
-            .replace(/['"]/g, '')
-            .substring(0, 255);
+        // Basic sanitization to prevent injection attacks
+        return text.trim().replace(/[<>]/g, '') // Remove potential HTML tags
+        .replace(/['"]/g, '') // Remove quotes that could be used for SQL injection
+        .substring(0, 255); // Ensure max length
+    }
+    constructor(prisma){
+        this.prisma = prisma;
+        this.logger = new _common.Logger(InventoryService.name);
+        this.LOW_STOCK_THRESHOLD = 10;
+        this.EXPIRY_WARNING_DAYS = 30;
     }
 };
-exports.InventoryService = InventoryService;
-exports.InventoryService = InventoryService = InventoryService_1 = __decorate([
-    (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+InventoryService = _ts_decorate([
+    (0, _common.Injectable)(),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _prismaservice.PrismaService === "undefined" ? Object : _prismaservice.PrismaService
+    ])
 ], InventoryService);
+
 //# sourceMappingURL=inventory.service.js.map

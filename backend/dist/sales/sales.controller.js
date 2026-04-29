@@ -1,30 +1,35 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "SalesController", {
+    enumerable: true,
+    get: function() {
+        return SalesController;
+    }
+});
+const _common = require("@nestjs/common");
+const _jwtauthguard = require("../auth/guards/jwt-auth.guard");
+const _rolesguard = require("../auth/guards/roles.guard");
+const _rolesdecorator = require("../auth/decorators/roles.decorator");
+const _client = require("@prisma/client");
+const _salesservice = require("./sales.service");
+const _dto = require("./dto");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
+}
+function _ts_metadata(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SalesController = void 0;
-const common_1 = require("@nestjs/common");
-const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
-const roles_guard_1 = require("../auth/guards/roles.guard");
-const roles_decorator_1 = require("../auth/decorators/roles.decorator");
-const client_1 = require("@prisma/client");
-const sales_service_1 = require("./sales.service");
-const dto_1 = require("./dto");
+}
+function _ts_param(paramIndex, decorator) {
+    return function(target, key) {
+        decorator(target, key, paramIndex);
+    };
+}
 let SalesController = class SalesController {
-    salesService;
-    constructor(salesService) {
-        this.salesService = salesService;
-    }
     async createSale(createSaleDto, req) {
         const userId = req.user?.id || null;
         return this.salesService.createSale(createSaleDto, userId);
@@ -43,51 +48,71 @@ let SalesController = class SalesController {
     async getInvoice(id) {
         return this.salesService.generateInvoice(id);
     }
+    constructor(salesService){
+        this.salesService = salesService;
+    }
 };
-exports.SalesController = SalesController;
-__decorate([
-    (0, common_1.Post)(),
-    __param(0, (0, common_1.Body)()),
-    __param(1, (0, common_1.Req)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.CreateSaleDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Post)(),
+    _ts_param(0, (0, _common.Body)()),
+    _ts_param(1, (0, _common.Req)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.CreateSaleDto === "undefined" ? Object : _dto.CreateSaleDto,
+        typeof Request === "undefined" ? Object : Request
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], SalesController.prototype, "createSale", null);
-__decorate([
-    (0, common_1.Get)(),
-    __param(0, (0, common_1.Query)('page')),
-    __param(1, (0, common_1.Query)('limit')),
-    __param(2, (0, common_1.Query)('startDate')),
-    __param(3, (0, common_1.Query)('endDate')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)(),
+    _ts_param(0, (0, _common.Query)('page')),
+    _ts_param(1, (0, _common.Query)('limit')),
+    _ts_param(2, (0, _common.Query)('startDate')),
+    _ts_param(3, (0, _common.Query)('endDate')),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        String,
+        String,
+        String
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], SalesController.prototype, "findAll", null);
-__decorate([
-    (0, common_1.Get)('report/daily'),
-    __param(0, (0, common_1.Query)('date')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('report/daily'),
+    _ts_param(0, (0, _common.Query)('date')),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], SalesController.prototype, "getDailyReport", null);
-__decorate([
-    (0, common_1.Get)(':id'),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)(':id'),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], SalesController.prototype, "findOne", null);
-__decorate([
-    (0, common_1.Get)(':id/invoice'),
-    __param(0, (0, common_1.Param)('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)(':id/invoice'),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], SalesController.prototype, "getInvoice", null);
-exports.SalesController = SalesController = __decorate([
-    (0, common_1.Controller)('sales'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(client_1.Role.PHARMACY, client_1.Role.ADMIN),
-    __metadata("design:paramtypes", [sales_service_1.SalesService])
+SalesController = _ts_decorate([
+    (0, _common.Controller)('sales'),
+    (0, _common.UseGuards)(_jwtauthguard.JwtAuthGuard, _rolesguard.RolesGuard),
+    (0, _rolesdecorator.Roles)(_client.Role.PHARMACY, _client.Role.ADMIN),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _salesservice.SalesService === "undefined" ? Object : _salesservice.SalesService
+    ])
 ], SalesController);
+
 //# sourceMappingURL=sales.controller.js.map

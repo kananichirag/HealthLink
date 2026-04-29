@@ -1,34 +1,39 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "PatientPrescriptionQueryDto", {
+    enumerable: true,
+    get: function() {
+        return PatientPrescriptionQueryDto;
+    }
+});
+const _classvalidator = require("class-validator");
+const _classtransformer = require("class-transformer");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.PatientPrescriptionQueryDto = void 0;
-const class_validator_1 = require("class-validator");
-const class_transformer_1 = require("class-transformer");
-class PatientPrescriptionQueryDto {
-    page;
-    limit;
 }
-exports.PatientPrescriptionQueryDto = PatientPrescriptionQueryDto;
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Type)(() => Number),
-    (0, class_validator_1.IsInt)(),
-    (0, class_validator_1.Min)(1),
-    __metadata("design:type", Number)
+function _ts_metadata(k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+}
+let PatientPrescriptionQueryDto = class PatientPrescriptionQueryDto {
+};
+_ts_decorate([
+    (0, _classvalidator.IsOptional)(),
+    (0, _classtransformer.Type)(()=>Number),
+    (0, _classvalidator.IsInt)(),
+    (0, _classvalidator.Min)(1),
+    _ts_metadata("design:type", Number)
 ], PatientPrescriptionQueryDto.prototype, "page", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Type)(() => Number),
-    (0, class_validator_1.IsInt)(),
-    (0, class_validator_1.Min)(1),
-    __metadata("design:type", Number)
+_ts_decorate([
+    (0, _classvalidator.IsOptional)(),
+    (0, _classtransformer.Type)(()=>Number),
+    (0, _classvalidator.IsInt)(),
+    (0, _classvalidator.Min)(1),
+    _ts_metadata("design:type", Number)
 ], PatientPrescriptionQueryDto.prototype, "limit", void 0);
+
 //# sourceMappingURL=prescription-query.dto.js.map

@@ -1,47 +1,55 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "PatientPortalService", {
+    enumerable: true,
+    get: function() {
+        return PatientPortalService;
+    }
+});
+const _common = require("@nestjs/common");
+const _prismaservice = require("../prisma/prisma.service");
+const _notificationsservice = require("../notifications/notifications.service");
+const _client = require("@prisma/client");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
+}
+function _ts_metadata(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var PatientPortalService_1;
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.PatientPortalService = void 0;
-const common_1 = require("@nestjs/common");
-const prisma_service_1 = require("../prisma/prisma.service");
-const notifications_service_1 = require("../notifications/notifications.service");
-const client_1 = require("@prisma/client");
+}
 const DAY_OF_WEEK_MAP = {
-    0: client_1.DayOfWeek.SUNDAY,
-    1: client_1.DayOfWeek.MONDAY,
-    2: client_1.DayOfWeek.TUESDAY,
-    3: client_1.DayOfWeek.WEDNESDAY,
-    4: client_1.DayOfWeek.THURSDAY,
-    5: client_1.DayOfWeek.FRIDAY,
-    6: client_1.DayOfWeek.SATURDAY,
+    0: _client.DayOfWeek.SUNDAY,
+    1: _client.DayOfWeek.MONDAY,
+    2: _client.DayOfWeek.TUESDAY,
+    3: _client.DayOfWeek.WEDNESDAY,
+    4: _client.DayOfWeek.THURSDAY,
+    5: _client.DayOfWeek.FRIDAY,
+    6: _client.DayOfWeek.SATURDAY
 };
-let PatientPortalService = PatientPortalService_1 = class PatientPortalService {
-    prisma;
-    notificationsService;
-    logger = new common_1.Logger(PatientPortalService_1.name);
-    constructor(prisma, notificationsService) {
-        this.prisma = prisma;
-        this.notificationsService = notificationsService;
-    }
-    async getOrCreatePatientRecord(userId) {
+let PatientPortalService = class PatientPortalService {
+    /**
+   * Find or create a Patient record for the authenticated user.
+   * Patients are cross-tenant, so tenantId is null.
+   */ async getOrCreatePatientRecord(userId) {
+        // Look for an existing patient record created by this user (self-registered)
         let patient = await this.prisma.patient.findFirst({
-            where: { createdBy: userId },
+            where: {
+                createdBy: userId
+            }
         });
         if (!patient) {
+            // Get user info to create a patient record
             const user = await this.prisma.user.findUnique({
-                where: { id: userId },
+                where: {
+                    id: userId
+                }
             });
             if (!user) {
-                throw new common_1.NotFoundException('User not found');
+                throw new _common.NotFoundException('User not found');
             }
             patient = await this.prisma.patient.create({
                 data: {
@@ -50,62 +58,109 @@ let PatientPortalService = PatientPortalService_1 = class PatientPortalService {
                     age: 0,
                     gender: 'OTHER',
                     createdBy: userId,
-                    tenantId: null,
-                },
+                    tenantId: null
+                }
             });
         }
         return patient;
     }
-    async listDoctors() {
+    /**
+   * List all doctors with clinic name, specialization, and availability.
+   */ async listDoctors() {
         const doctors = await this.prisma.user.findMany({
-            where: { role: 'DOCTOR' },
+            where: {
+                role: 'DOCTOR'
+            },
             select: {
                 id: true,
                 name: true,
                 email: true,
-                tenant: { select: { id: true, name: true } },
-                doctorSchedules: {
-                    select: { dayOfWeek: true, startTime: true, endTime: true },
+                tenant: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
                 },
-            },
+                doctorSchedules: {
+                    select: {
+                        dayOfWeek: true,
+                        startTime: true,
+                        endTime: true
+                    }
+                }
+            }
         });
-        return doctors.map((doctor) => ({
-            id: doctor.id,
-            name: doctor.name,
-            email: doctor.email,
-            clinicName: doctor.tenant?.name ?? null,
-            availability: doctor.doctorSchedules,
-        }));
+        return doctors.map((doctor)=>({
+                id: doctor.id,
+                name: doctor.name,
+                email: doctor.email,
+                clinicName: doctor.tenant?.name ?? null,
+                availability: doctor.doctorSchedules
+            }));
     }
-    async connectWithDoctor(doctorId, userId) {
+    /**
+   * Create a patient-doctor association.
+   * We use the Appointment model implicitly — connecting means the patient
+   * can now book appointments. We store a simple record via a lightweight approach.
+   * For now, this is a no-op acknowledgment since any patient can book with any doctor.
+   * The design says "create patient-doctor association record" — we'll return success.
+   */ async connectWithDoctor(doctorId, userId) {
+        // Verify the doctor exists
         const doctor = await this.prisma.user.findFirst({
-            where: { id: doctorId, role: 'DOCTOR' },
+            where: {
+                id: doctorId,
+                role: 'DOCTOR'
+            }
         });
         if (!doctor) {
-            throw new common_1.NotFoundException('Doctor not found');
+            throw new _common.NotFoundException('Doctor not found');
         }
+        // Ensure patient record exists
         await this.getOrCreatePatientRecord(userId);
-        return { message: 'Connected with doctor successfully', doctorId };
+        return {
+            message: 'Connected with doctor successfully',
+            doctorId
+        };
     }
-    async getAvailableSlots(doctorId, date) {
+    /**
+   * Get available slots for a doctor on a specific date.
+   * Excludes booked slots and blocked dates.
+   */ async getAvailableSlots(doctorId, date) {
         const requestedDate = new Date(date);
         const dayOfWeek = DAY_OF_WEEK_MAP[requestedDate.getDay()];
+        // Check if the date is blocked
         const blockedDate = await this.prisma.blockedDate.findFirst({
             where: {
                 doctorId,
-                date: requestedDate,
-            },
+                date: requestedDate
+            }
         });
         if (blockedDate) {
-            return { date, dayOfWeek, slots: [] };
+            return {
+                date,
+                dayOfWeek,
+                slots: []
+            };
         }
+        // Get the doctor's schedule for this day of week
         const schedules = await this.prisma.doctorSchedule.findMany({
-            where: { doctorId, dayOfWeek },
-            select: { startTime: true, endTime: true },
+            where: {
+                doctorId,
+                dayOfWeek
+            },
+            select: {
+                startTime: true,
+                endTime: true
+            }
         });
         if (schedules.length === 0) {
-            return { date, dayOfWeek, slots: [] };
+            return {
+                date,
+                dayOfWeek,
+                slots: []
+            };
         }
+        // Get existing SCHEDULED appointments for this doctor on this date
         const startOfDay = new Date(requestedDate);
         startOfDay.setHours(0, 0, 0, 0);
         const endOfDay = new Date(requestedDate);
@@ -113,19 +168,25 @@ let PatientPortalService = PatientPortalService_1 = class PatientPortalService {
         const bookedAppointments = await this.prisma.appointment.findMany({
             where: {
                 doctorId,
-                date: { gte: startOfDay, lte: endOfDay },
-                status: 'SCHEDULED',
+                date: {
+                    gte: startOfDay,
+                    lte: endOfDay
+                },
+                status: 'SCHEDULED'
             },
-            select: { timeSlot: true },
+            select: {
+                timeSlot: true
+            }
         });
-        const bookedSlots = new Set(bookedAppointments.map((a) => a.timeSlot));
+        const bookedSlots = new Set(bookedAppointments.map((a)=>a.timeSlot));
+        // Generate 30-minute slots from each schedule range, filtering out booked ones
         const availableSlots = [];
-        for (const schedule of schedules) {
+        for (const schedule of schedules){
             const [startH, startM] = schedule.startTime.split(':').map(Number);
             const [endH, endM] = schedule.endTime.split(':').map(Number);
             const startMinutes = startH * 60 + startM;
             const endMinutes = endH * 60 + endM;
-            for (let t = startMinutes; t + 30 <= endMinutes; t += 30) {
+            for(let t = startMinutes; t + 30 <= endMinutes; t += 30){
                 const slotStart = `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
                 const slotEnd = `${String(Math.floor((t + 30) / 60)).padStart(2, '0')}:${String((t + 30) % 60).padStart(2, '0')}`;
                 const slotKey = `${slotStart}-${slotEnd}`;
@@ -134,33 +195,58 @@ let PatientPortalService = PatientPortalService_1 = class PatientPortalService {
                 }
             }
         }
-        return { date, dayOfWeek, slots: availableSlots };
+        return {
+            date,
+            dayOfWeek,
+            slots: availableSlots
+        };
     }
-    async bookAppointment(dto, userId) {
+    /**
+   * Book an appointment with a doctor.
+   * Checks slot availability, enforces max per day, creates SCHEDULED appointment,
+   * and sends notifications to both patient and doctor.
+   */ async bookAppointment(dto, userId) {
         const { doctorId, date, timeSlot } = dto;
         const appointmentDate = new Date(date);
         const dayOfWeek = DAY_OF_WEEK_MAP[appointmentDate.getDay()];
+        // Verify doctor exists
         const doctor = await this.prisma.user.findFirst({
-            where: { id: doctorId, role: 'DOCTOR' },
+            where: {
+                id: doctorId,
+                role: 'DOCTOR'
+            }
         });
         if (!doctor) {
-            throw new common_1.NotFoundException('Doctor not found');
+            throw new _common.NotFoundException('Doctor not found');
         }
+        // Check if date is blocked
         const blockedDate = await this.prisma.blockedDate.findFirst({
-            where: { doctorId, date: appointmentDate },
+            where: {
+                doctorId,
+                date: appointmentDate
+            }
         });
         if (blockedDate) {
-            throw new common_1.ConflictException('This date is blocked by the doctor');
+            throw new _common.ConflictException('This date is blocked by the doctor');
         }
+        // Verify the time slot falls within the doctor's schedule for this day
+        // Slots are 30-min sub-slots in format "HH:MM-HH:MM"
         const [slotStart, slotEnd] = timeSlot.split('-');
         const schedules = await this.prisma.doctorSchedule.findMany({
-            where: { doctorId, dayOfWeek },
-            select: { startTime: true, endTime: true },
+            where: {
+                doctorId,
+                dayOfWeek
+            },
+            select: {
+                startTime: true,
+                endTime: true
+            }
         });
-        const slotFitsSchedule = schedules.some((s) => slotStart >= s.startTime && slotEnd <= s.endTime);
+        const slotFitsSchedule = schedules.some((s)=>slotStart >= s.startTime && slotEnd <= s.endTime);
         if (!slotFitsSchedule) {
-            throw new common_1.BadRequestException("This time slot is not in the doctor's schedule");
+            throw new _common.BadRequestException("This time slot is not in the doctor's schedule");
         }
+        // Check if slot is already booked
         const startOfDay = new Date(appointmentDate);
         startOfDay.setHours(0, 0, 0, 0);
         const endOfDay = new Date(appointmentDate);
@@ -168,26 +254,35 @@ let PatientPortalService = PatientPortalService_1 = class PatientPortalService {
         const existingAppointment = await this.prisma.appointment.findFirst({
             where: {
                 doctorId,
-                date: { gte: startOfDay, lte: endOfDay },
+                date: {
+                    gte: startOfDay,
+                    lte: endOfDay
+                },
                 timeSlot,
-                status: 'SCHEDULED',
-            },
+                status: 'SCHEDULED'
+            }
         });
         if (existingAppointment) {
-            throw new common_1.ConflictException('This time slot is already booked');
+            throw new _common.ConflictException('This time slot is already booked');
         }
+        // Check max appointments per day (default 20 if not configured)
         const maxPerDay = 20;
         const dayAppointmentCount = await this.prisma.appointment.count({
             where: {
                 doctorId,
-                date: { gte: startOfDay, lte: endOfDay },
-                status: 'SCHEDULED',
-            },
+                date: {
+                    gte: startOfDay,
+                    lte: endOfDay
+                },
+                status: 'SCHEDULED'
+            }
         });
         if (dayAppointmentCount >= maxPerDay) {
-            throw new common_1.ConflictException('Maximum appointments for this day has been reached');
+            throw new _common.ConflictException('Maximum appointments for this day has been reached');
         }
+        // Get or create patient record
         const patient = await this.getOrCreatePatientRecord(userId);
+        // Create the appointment
         const appointment = await this.prisma.appointment.create({
             data: {
                 patientId: patient.id,
@@ -195,45 +290,85 @@ let PatientPortalService = PatientPortalService_1 = class PatientPortalService {
                 date: appointmentDate,
                 timeSlot,
                 status: 'SCHEDULED',
-                tenantId: doctor.tenantId ?? '',
+                tenantId: doctor.tenantId ?? ''
             },
             include: {
-                patient: { select: { id: true, name: true } },
-                doctor: { select: { id: true, name: true } },
-            },
+                patient: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                doctor: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
         });
+        // Send notifications to both patient and doctor
         await Promise.all([
             this.notificationsService.create(userId, 'APPOINTMENT_BOOKED', `Your appointment with Dr. ${doctor.name} on ${date} at ${timeSlot} has been confirmed`),
-            this.notificationsService.create(doctorId, 'APPOINTMENT_BOOKED', `New appointment with patient ${patient.name} on ${date} at ${timeSlot}`),
+            this.notificationsService.create(doctorId, 'APPOINTMENT_BOOKED', `New appointment with patient ${patient.name} on ${date} at ${timeSlot}`)
         ]);
         return appointment;
     }
-    async cancelAppointment(appointmentId, userId) {
+    /**
+   * Cancel a scheduled appointment.
+   */ async cancelAppointment(appointmentId, userId) {
         const patient = await this.getOrCreatePatientRecord(userId);
         const appointment = await this.prisma.appointment.findFirst({
-            where: { id: appointmentId, patientId: patient.id, status: 'SCHEDULED' },
-            include: {
-                doctor: { select: { id: true, name: true } },
+            where: {
+                id: appointmentId,
+                patientId: patient.id,
+                status: 'SCHEDULED'
             },
+            include: {
+                doctor: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
         });
         if (!appointment) {
-            throw new common_1.NotFoundException('Scheduled appointment not found');
+            throw new _common.NotFoundException('Scheduled appointment not found');
         }
         const updated = await this.prisma.appointment.update({
-            where: { id: appointmentId },
-            data: { status: 'CANCELLED' },
-            include: {
-                patient: { select: { id: true, name: true } },
-                doctor: { select: { id: true, name: true } },
+            where: {
+                id: appointmentId
             },
+            data: {
+                status: 'CANCELLED'
+            },
+            include: {
+                patient: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                doctor: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
         });
         return updated;
     }
-    async listAppointments(query, userId) {
+    /**
+   * List patient's appointments with optional filters.
+   */ async listAppointments(query, userId) {
         const patient = await this.getOrCreatePatientRecord(userId);
         const { status, startDate, endDate, page = 1, limit = 10 } = query;
         const skip = (page - 1) * limit;
-        const where = { patientId: patient.id };
+        const where = {
+            patientId: patient.id
+        };
         if (status) {
             where.status = status;
         }
@@ -247,87 +382,167 @@ let PatientPortalService = PatientPortalService_1 = class PatientPortalService {
             }
         }
         const [total, appointments] = await Promise.all([
-            this.prisma.appointment.count({ where }),
+            this.prisma.appointment.count({
+                where
+            }),
             this.prisma.appointment.findMany({
                 where,
                 skip,
                 take: limit,
-                orderBy: { date: 'asc' },
-                include: {
-                    doctor: { select: { id: true, name: true, email: true } },
+                orderBy: {
+                    date: 'asc'
                 },
-            }),
+                include: {
+                    doctor: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true
+                        }
+                    }
+                }
+            })
         ]);
-        return { data: appointments, total, page, limit };
+        return {
+            data: appointments,
+            total,
+            page,
+            limit
+        };
     }
-    async listPrescriptions(query, userId) {
+    /**
+   * List prescriptions assigned to the patient, sorted by createdAt desc.
+   */ async listPrescriptions(query, userId) {
         const patient = await this.getOrCreatePatientRecord(userId);
         const { page = 1, limit = 10 } = query;
         const skip = (page - 1) * limit;
-        const where = { patientId: patient.id };
+        const where = {
+            patientId: patient.id
+        };
         const [total, prescriptions] = await Promise.all([
-            this.prisma.prescription.count({ where }),
+            this.prisma.prescription.count({
+                where
+            }),
             this.prisma.prescription.findMany({
                 where,
                 skip,
                 take: limit,
-                orderBy: { createdAt: 'desc' },
+                orderBy: {
+                    createdAt: 'desc'
+                },
                 include: {
-                    doctor: { select: { id: true, name: true } },
+                    doctor: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    },
                     items: {
                         include: {
-                            medicine: { select: { id: true, name: true } },
-                        },
-                    },
-                },
-            }),
+                            medicine: {
+                                select: {
+                                    id: true,
+                                    name: true
+                                }
+                            }
+                        }
+                    }
+                }
+            })
         ]);
-        const data = await Promise.all(prescriptions.map(async (rx) => {
+        // Attach pharmacy info for dispatched prescriptions
+        const data = await Promise.all(prescriptions.map(async (rx)=>{
             let pharmacy = null;
             if (rx.targetPharmacyId) {
                 const pharmacyUser = await this.prisma.user.findUnique({
-                    where: { id: rx.targetPharmacyId },
-                    select: { id: true, name: true },
+                    where: {
+                        id: rx.targetPharmacyId
+                    },
+                    select: {
+                        id: true,
+                        name: true
+                    }
                 });
                 pharmacy = pharmacyUser ?? null;
             }
-            return { ...rx, pharmacy };
+            return {
+                ...rx,
+                pharmacy
+            };
         }));
-        return { data, total, page, limit };
+        return {
+            data,
+            total,
+            page,
+            limit
+        };
     }
-    async getPrescriptionDetail(prescriptionId, userId) {
+    /**
+   * Get full prescription detail including all PrescriptionItem records,
+   * doctor name, and pharmacy info.
+   */ async getPrescriptionDetail(prescriptionId, userId) {
         const patient = await this.getOrCreatePatientRecord(userId);
         const prescription = await this.prisma.prescription.findFirst({
-            where: { id: prescriptionId, patientId: patient.id },
+            where: {
+                id: prescriptionId,
+                patientId: patient.id
+            },
             include: {
-                doctor: { select: { id: true, name: true, email: true } },
+                doctor: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
+                },
                 items: {
                     include: {
                         medicine: {
-                            select: { id: true, name: true, batchNumber: true },
-                        },
-                    },
-                },
-            },
+                            select: {
+                                id: true,
+                                name: true,
+                                batchNumber: true
+                            }
+                        }
+                    }
+                }
+            }
         });
         if (!prescription) {
-            throw new common_1.NotFoundException('Prescription not found');
+            throw new _common.NotFoundException('Prescription not found');
         }
+        // Attach pharmacy info if dispatched
         let pharmacy = null;
         if (prescription.targetPharmacyId) {
             const pharmacyUser = await this.prisma.user.findUnique({
-                where: { id: prescription.targetPharmacyId },
-                select: { id: true, name: true },
+                where: {
+                    id: prescription.targetPharmacyId
+                },
+                select: {
+                    id: true,
+                    name: true
+                }
             });
             pharmacy = pharmacyUser ?? null;
         }
-        return { ...prescription, pharmacy };
+        return {
+            ...prescription,
+            pharmacy
+        };
+    }
+    constructor(prisma, notificationsService){
+        this.prisma = prisma;
+        this.notificationsService = notificationsService;
+        this.logger = new _common.Logger(PatientPortalService.name);
     }
 };
-exports.PatientPortalService = PatientPortalService;
-exports.PatientPortalService = PatientPortalService = PatientPortalService_1 = __decorate([
-    (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        notifications_service_1.NotificationsService])
+PatientPortalService = _ts_decorate([
+    (0, _common.Injectable)(),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _prismaservice.PrismaService === "undefined" ? Object : _prismaservice.PrismaService,
+        typeof _notificationsservice.NotificationsService === "undefined" ? Object : _notificationsservice.NotificationsService
+    ])
 ], PatientPortalService);
+
 //# sourceMappingURL=patient-portal.service.js.map

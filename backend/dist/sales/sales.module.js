@@ -1,27 +1,44 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "SalesModule", {
+    enumerable: true,
+    get: function() {
+        return SalesModule;
+    }
+});
+const _common = require("@nestjs/common");
+const _salescontroller = require("./sales.controller");
+const _salesservice = require("./sales.service");
+const _prismamodule = require("../prisma/prisma.module");
+const _authmodule = require("../auth/auth.module");
+const _inventorymodule = require("../inventory/inventory.module");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.SalesModule = void 0;
-const common_1 = require("@nestjs/common");
-const sales_controller_1 = require("./sales.controller");
-const sales_service_1 = require("./sales.service");
-const prisma_module_1 = require("../prisma/prisma.module");
-const auth_module_1 = require("../auth/auth.module");
-const inventory_module_1 = require("../inventory/inventory.module");
+}
 let SalesModule = class SalesModule {
 };
-exports.SalesModule = SalesModule;
-exports.SalesModule = SalesModule = __decorate([
-    (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule, auth_module_1.AuthModule, inventory_module_1.InventoryModule],
-        controllers: [sales_controller_1.SalesController],
-        providers: [sales_service_1.SalesService],
-        exports: [sales_service_1.SalesService],
+SalesModule = _ts_decorate([
+    (0, _common.Module)({
+        imports: [
+            _prismamodule.PrismaModule,
+            _authmodule.AuthModule,
+            _inventorymodule.InventoryModule
+        ],
+        controllers: [
+            _salescontroller.SalesController
+        ],
+        providers: [
+            _salesservice.SalesService
+        ],
+        exports: [
+            _salesservice.SalesService
+        ]
     })
 ], SalesModule);
+
 //# sourceMappingURL=sales.module.js.map

@@ -1,27 +1,44 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "PatientPortalModule", {
+    enumerable: true,
+    get: function() {
+        return PatientPortalModule;
+    }
+});
+const _common = require("@nestjs/common");
+const _patientportalcontroller = require("./patient-portal.controller");
+const _patientportalservice = require("./patient-portal.service");
+const _prismamodule = require("../prisma/prisma.module");
+const _authmodule = require("../auth/auth.module");
+const _notificationsmodule = require("../notifications/notifications.module");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.PatientPortalModule = void 0;
-const common_1 = require("@nestjs/common");
-const patient_portal_controller_1 = require("./patient-portal.controller");
-const patient_portal_service_1 = require("./patient-portal.service");
-const prisma_module_1 = require("../prisma/prisma.module");
-const auth_module_1 = require("../auth/auth.module");
-const notifications_module_1 = require("../notifications/notifications.module");
+}
 let PatientPortalModule = class PatientPortalModule {
 };
-exports.PatientPortalModule = PatientPortalModule;
-exports.PatientPortalModule = PatientPortalModule = __decorate([
-    (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule, auth_module_1.AuthModule, notifications_module_1.NotificationsModule],
-        controllers: [patient_portal_controller_1.PatientPortalController],
-        providers: [patient_portal_service_1.PatientPortalService],
-        exports: [patient_portal_service_1.PatientPortalService],
+PatientPortalModule = _ts_decorate([
+    (0, _common.Module)({
+        imports: [
+            _prismamodule.PrismaModule,
+            _authmodule.AuthModule,
+            _notificationsmodule.NotificationsModule
+        ],
+        controllers: [
+            _patientportalcontroller.PatientPortalController
+        ],
+        providers: [
+            _patientportalservice.PatientPortalService
+        ],
+        exports: [
+            _patientportalservice.PatientPortalService
+        ]
     })
 ], PatientPortalModule);
+
 //# sourceMappingURL=patient-portal.module.js.map

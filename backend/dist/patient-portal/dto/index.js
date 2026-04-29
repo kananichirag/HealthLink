@@ -1,10 +1,26 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.PatientPrescriptionQueryDto = exports.PatientAppointmentQueryDto = exports.BookAppointmentDto = void 0;
-var book_appointment_dto_1 = require("./book-appointment.dto");
-Object.defineProperty(exports, "BookAppointmentDto", { enumerable: true, get: function () { return book_appointment_dto_1.BookAppointmentDto; } });
-var appointment_query_dto_1 = require("./appointment-query.dto");
-Object.defineProperty(exports, "PatientAppointmentQueryDto", { enumerable: true, get: function () { return appointment_query_dto_1.PatientAppointmentQueryDto; } });
-var prescription_query_dto_1 = require("./prescription-query.dto");
-Object.defineProperty(exports, "PatientPrescriptionQueryDto", { enumerable: true, get: function () { return prescription_query_dto_1.PatientPrescriptionQueryDto; } });
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get BookAppointmentDto () {
+        return _bookappointmentdto.BookAppointmentDto;
+    },
+    get PatientAppointmentQueryDto () {
+        return _appointmentquerydto.PatientAppointmentQueryDto;
+    },
+    get PatientPrescriptionQueryDto () {
+        return _prescriptionquerydto.PatientPrescriptionQueryDto;
+    }
+});
+const _bookappointmentdto = require("./book-appointment.dto");
+const _appointmentquerydto = require("./appointment-query.dto");
+const _prescriptionquerydto = require("./prescription-query.dto");
+
 //# sourceMappingURL=index.js.map

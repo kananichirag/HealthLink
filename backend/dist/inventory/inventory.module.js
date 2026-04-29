@@ -1,26 +1,42 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "InventoryModule", {
+    enumerable: true,
+    get: function() {
+        return InventoryModule;
+    }
+});
+const _common = require("@nestjs/common");
+const _inventorycontroller = require("./inventory.controller");
+const _inventoryservice = require("./inventory.service");
+const _prismamodule = require("../prisma/prisma.module");
+const _authmodule = require("../auth/auth.module");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.InventoryModule = void 0;
-const common_1 = require("@nestjs/common");
-const inventory_controller_1 = require("./inventory.controller");
-const inventory_service_1 = require("./inventory.service");
-const prisma_module_1 = require("../prisma/prisma.module");
-const auth_module_1 = require("../auth/auth.module");
+}
 let InventoryModule = class InventoryModule {
 };
-exports.InventoryModule = InventoryModule;
-exports.InventoryModule = InventoryModule = __decorate([
-    (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule, auth_module_1.AuthModule],
-        controllers: [inventory_controller_1.InventoryController],
-        providers: [inventory_service_1.InventoryService],
-        exports: [inventory_service_1.InventoryService],
+InventoryModule = _ts_decorate([
+    (0, _common.Module)({
+        imports: [
+            _prismamodule.PrismaModule,
+            _authmodule.AuthModule
+        ],
+        controllers: [
+            _inventorycontroller.InventoryController
+        ],
+        providers: [
+            _inventoryservice.InventoryService
+        ],
+        exports: [
+            _inventoryservice.InventoryService
+        ]
     })
 ], InventoryModule);
+
 //# sourceMappingURL=inventory.module.js.map

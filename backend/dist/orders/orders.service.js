@@ -1,70 +1,104 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "OrdersService", {
+    enumerable: true,
+    get: function() {
+        return OrdersService;
+    }
+});
+const _common = require("@nestjs/common");
+const _eventemitter = require("@nestjs/event-emitter");
+const _prismaservice = require("../prisma/prisma.service");
+const _orderevents = require("./events/order.events");
+const _client = require("@prisma/client");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
+}
+function _ts_metadata(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var OrdersService_1;
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.OrdersService = void 0;
-const common_1 = require("@nestjs/common");
-const event_emitter_1 = require("@nestjs/event-emitter");
-const prisma_service_1 = require("../prisma/prisma.service");
-const order_events_1 = require("./events/order.events");
-const client_1 = require("@prisma/client");
-let OrdersService = OrdersService_1 = class OrdersService {
-    prisma;
-    eventEmitter;
-    logger = new common_1.Logger(OrdersService_1.name);
-    constructor(prisma, eventEmitter) {
-        this.prisma = prisma;
-        this.eventEmitter = eventEmitter;
-    }
+}
+let OrdersService = class OrdersService {
     async createOrder(dto, pharmacyId) {
         this.logger.log(`Creating order for prescription ${dto.prescriptionId} by pharmacy ${pharmacyId}`);
+        // Validate prescription exists
         const prescription = await this.prisma.prescription.findUnique({
-            where: { id: dto.prescriptionId },
-            include: { patient: { select: { id: true } } },
+            where: {
+                id: dto.prescriptionId
+            },
+            include: {
+                patient: {
+                    select: {
+                        id: true
+                    }
+                }
+            }
         });
         if (!prescription) {
-            throw new common_1.NotFoundException(`Prescription with ID ${dto.prescriptionId} not found`);
+            throw new _common.NotFoundException(`Prescription with ID ${dto.prescriptionId} not found`);
         }
-        if (prescription.status !== client_1.PrescriptionStatus.PENDING) {
-            throw new common_1.UnprocessableEntityException(`Prescription is not eligible for order creation. Current status: ${prescription.status}`);
+        if (prescription.status !== _client.PrescriptionStatus.PENDING) {
+            throw new _common.UnprocessableEntityException(`Prescription is not eligible for order creation. Current status: ${prescription.status}`);
         }
-        const order = await this.prisma.$transaction(async (tx) => {
+        // Create order and update prescription status atomically
+        const order = await this.prisma.$transaction(async (tx)=>{
             const created = await tx.order.create({
                 data: {
-                    prescription: { connect: { id: dto.prescriptionId } },
-                    pharmacy: { connect: { id: pharmacyId } },
-                    status: client_1.OrderStatus.PENDING,
+                    prescription: {
+                        connect: {
+                            id: dto.prescriptionId
+                        }
+                    },
+                    pharmacy: {
+                        connect: {
+                            id: pharmacyId
+                        }
+                    },
+                    status: _client.OrderStatus.PENDING
                 },
                 include: {
                     prescription: {
-                        select: { id: true, patientId: true, doctorId: true, status: true },
+                        select: {
+                            id: true,
+                            patientId: true,
+                            doctorId: true,
+                            status: true
+                        }
                     },
-                    pharmacy: { select: { id: true, name: true } },
-                },
+                    pharmacy: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    }
+                }
             });
             await tx.prescription.update({
-                where: { id: dto.prescriptionId },
-                data: { status: client_1.PrescriptionStatus.DISPENSED },
+                where: {
+                    id: dto.prescriptionId
+                },
+                data: {
+                    status: _client.PrescriptionStatus.DISPENSED
+                }
             });
             return created;
-        }, { timeout: 30000 });
+        }, {
+            timeout: 30000
+        });
+        // Emit event
         const payload = {
             orderId: order.id,
             prescriptionId: order.prescriptionId,
             patientId: prescription.patientId,
             pharmacyId,
-            newStatus: client_1.OrderStatus.PENDING,
-            trackingInfo: null,
+            newStatus: _client.OrderStatus.PENDING,
+            trackingInfo: null
         };
-        this.eventEmitter.emit(order_events_1.ORDER_STATUS_UPDATED, payload);
+        this.eventEmitter.emit(_orderevents.ORDER_STATUS_UPDATED, payload);
         return this.toResponseDto(order);
     }
     async findAll(page = 1, limit = 10) {
@@ -74,70 +108,115 @@ let OrdersService = OrdersService_1 = class OrdersService {
             this.prisma.order.findMany({
                 skip,
                 take: limit,
-                orderBy: { createdAt: 'desc' },
+                orderBy: {
+                    createdAt: 'desc'
+                },
                 include: {
                     prescription: {
-                        select: { id: true, patientId: true, doctorId: true, status: true },
+                        select: {
+                            id: true,
+                            patientId: true,
+                            doctorId: true,
+                            status: true
+                        }
                     },
-                    pharmacy: { select: { id: true, name: true } },
-                },
-            }),
+                    pharmacy: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    }
+                }
+            })
         ]);
         return {
-            data: orders.map((o) => this.toResponseDto(o)),
+            data: orders.map((o)=>this.toResponseDto(o)),
             total,
             page,
-            limit,
+            limit
         };
     }
     async findById(id) {
         const order = await this.prisma.order.findUnique({
-            where: { id },
+            where: {
+                id
+            },
             include: {
                 prescription: {
-                    select: { id: true, patientId: true, doctorId: true, status: true },
+                    select: {
+                        id: true,
+                        patientId: true,
+                        doctorId: true,
+                        status: true
+                    }
                 },
-                pharmacy: { select: { id: true, name: true } },
-            },
+                pharmacy: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
         });
         if (!order) {
-            throw new common_1.NotFoundException(`Order with ID ${id} not found`);
+            throw new _common.NotFoundException(`Order with ID ${id} not found`);
         }
         return this.toResponseDto(order);
     }
     async updateStatus(id, dto) {
         const order = await this.prisma.order.findUnique({
-            where: { id },
-            include: {
-                prescription: { select: { patientId: true } },
-            },
-        });
-        if (!order) {
-            throw new common_1.NotFoundException(`Order with ID ${id} not found`);
-        }
-        const updated = await this.prisma.order.update({
-            where: { id },
-            data: {
-                status: dto.status,
-                ...(dto.trackingInfo !== undefined && { trackingInfo: dto.trackingInfo }),
+            where: {
+                id
             },
             include: {
                 prescription: {
-                    select: { id: true, patientId: true, doctorId: true, status: true },
-                },
-                pharmacy: { select: { id: true, name: true } },
-            },
+                    select: {
+                        patientId: true
+                    }
+                }
+            }
         });
-        if (dto.status === client_1.OrderStatus.SHIPPED || dto.status === client_1.OrderStatus.DELIVERED) {
+        if (!order) {
+            throw new _common.NotFoundException(`Order with ID ${id} not found`);
+        }
+        const updated = await this.prisma.order.update({
+            where: {
+                id
+            },
+            data: {
+                status: dto.status,
+                ...dto.trackingInfo !== undefined && {
+                    trackingInfo: dto.trackingInfo
+                }
+            },
+            include: {
+                prescription: {
+                    select: {
+                        id: true,
+                        patientId: true,
+                        doctorId: true,
+                        status: true
+                    }
+                },
+                pharmacy: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                }
+            }
+        });
+        // Emit event for SHIPPED or DELIVERED
+        if (dto.status === _client.OrderStatus.SHIPPED || dto.status === _client.OrderStatus.DELIVERED) {
             const payload = {
                 orderId: updated.id,
                 prescriptionId: updated.prescriptionId,
                 patientId: order.prescription.patientId,
                 pharmacyId: updated.pharmacyId,
                 newStatus: dto.status,
-                trackingInfo: updated.trackingInfo,
+                trackingInfo: updated.trackingInfo
             };
-            this.eventEmitter.emit(order_events_1.ORDER_STATUS_UPDATED, payload);
+            this.eventEmitter.emit(_orderevents.ORDER_STATUS_UPDATED, payload);
         }
         return this.toResponseDto(updated);
     }
@@ -151,14 +230,22 @@ let OrdersService = OrdersService_1 = class OrdersService {
             createdAt: order.createdAt,
             updatedAt: order.updatedAt,
             prescription: order.prescription,
-            pharmacy: order.pharmacy,
+            pharmacy: order.pharmacy
         };
     }
+    constructor(prisma, eventEmitter){
+        this.prisma = prisma;
+        this.eventEmitter = eventEmitter;
+        this.logger = new _common.Logger(OrdersService.name);
+    }
 };
-exports.OrdersService = OrdersService;
-exports.OrdersService = OrdersService = OrdersService_1 = __decorate([
-    (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        event_emitter_1.EventEmitter2])
+OrdersService = _ts_decorate([
+    (0, _common.Injectable)(),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _prismaservice.PrismaService === "undefined" ? Object : _prismaservice.PrismaService,
+        typeof _eventemitter.EventEmitter2 === "undefined" ? Object : _eventemitter.EventEmitter2
+    ])
 ], OrdersService);
+
 //# sourceMappingURL=orders.service.js.map

@@ -1,1 +1,1 @@
-{"version":3,"file":"block-date.dto.js","sourceRoot":"","sources":["../../../src/doctor/dto/block-date.dto.ts"],"names":[],"mappings":";;;;;;;;;;;;AAAA,qDAA+C;AAE/C,MAAa,YAAY;IAEvB,IAAI,CAAS;CACd;AAHD,oCAGC;AADC;IADC,IAAA,8BAAY,GAAE;;0CACF"}
+{"version":3,"sources":["../../../src/doctor/dto/block-date.dto.ts"],"sourcesContent":["import { IsDateString } from 'class-validator';\n\nexport class BlockDateDto {\n  @IsDateString()\n  date: string;\n}\n"],"names":["BlockDateDto"],"mappings":";;;;+BAEaA;;;eAAAA;;;gCAFgB;;;;;;;;;;AAEtB,IAAA,AAAMA,eAAN,MAAMA;AAGb"}

@@ -1,10 +1,28 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.tenantStorage = void 0;
-exports.getTenantContext = getTenantContext;
-const async_hooks_1 = require("async_hooks");
-exports.tenantStorage = new async_hooks_1.AsyncLocalStorage();
-function getTenantContext() {
-    return exports.tenantStorage.getStore() ?? { tenantId: null, role: null };
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
 }
+_export(exports, {
+    get getTenantContext () {
+        return getTenantContext;
+    },
+    get tenantStorage () {
+        return tenantStorage;
+    }
+});
+const _async_hooks = require("async_hooks");
+const tenantStorage = new _async_hooks.AsyncLocalStorage();
+function getTenantContext() {
+    return tenantStorage.getStore() ?? {
+        tenantId: null,
+        role: null
+    };
+}
+
 //# sourceMappingURL=tenant-context.js.map

@@ -1,73 +1,97 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
+Object.defineProperty(exports, "__esModule", {
+    value: true
 });
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
+const _core = require("@nestjs/core");
+const _common = require("@nestjs/common");
+const _config = require("@nestjs/config");
+const _appmodule = require("./app.module");
+const _httpexceptionfilter = require("./common/filters/http-exception.filter");
+const _express = /*#__PURE__*/ _interop_require_wildcard(require("express"));
+function _getRequireWildcardCache(nodeInterop) {
+    if (typeof WeakMap !== "function") return null;
+    var cacheBabelInterop = new WeakMap();
+    var cacheNodeInterop = new WeakMap();
+    return (_getRequireWildcardCache = function(nodeInterop) {
+        return nodeInterop ? cacheNodeInterop : cacheBabelInterop;
+    })(nodeInterop);
+}
+function _interop_require_wildcard(obj, nodeInterop) {
+    if (!nodeInterop && obj && obj.__esModule) {
+        return obj;
+    }
+    if (obj === null || typeof obj !== "object" && typeof obj !== "function") {
+        return {
+            default: obj
         };
-        return ownKeys(o);
+    }
+    var cache = _getRequireWildcardCache(nodeInterop);
+    if (cache && cache.has(obj)) {
+        return cache.get(obj);
+    }
+    var newObj = {
+        __proto__: null
     };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-const core_1 = require("@nestjs/core");
-const common_1 = require("@nestjs/common");
-const config_1 = require("@nestjs/config");
-const app_module_1 = require("./app.module");
-const http_exception_filter_1 = require("./common/filters/http-exception.filter");
-const express = __importStar(require("express"));
+    var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor;
+    for(var key in obj){
+        if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) {
+            var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null;
+            if (desc && (desc.get || desc.set)) {
+                Object.defineProperty(newObj, key, desc);
+            } else {
+                newObj[key] = obj[key];
+            }
+        }
+    }
+    newObj.default = obj;
+    if (cache) {
+        cache.set(obj, newObj);
+    }
+    return newObj;
+}
 async function bootstrap() {
-    const app = await core_1.NestFactory.create(app_module_1.AppModule);
-    const configService = app.get(config_1.ConfigService);
-    const logger = new common_1.Logger('Bootstrap');
-    app.use('/payments/webhook', express.raw({ type: 'application/json' }));
+    const app = await _core.NestFactory.create(_appmodule.AppModule);
+    const configService = app.get(_config.ConfigService);
+    const logger = new _common.Logger('Bootstrap');
+    // Raw body middleware for Stripe webhook — MUST be before global JSON parser and ValidationPipe
+    app.use('/payments/webhook', _express.raw({
+        type: 'application/json'
+    }));
+    // Enable CORS for frontend communication
     app.enableCors({
         origin: [
             'http://localhost:3000',
-            'http://127.0.0.1:3000',
+            'http://127.0.0.1:3000'
         ],
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        methods: [
+            'GET',
+            'POST',
+            'PUT',
+            'DELETE',
+            'PATCH',
+            'OPTIONS'
+        ],
         allowedHeaders: [
             'Origin',
             'X-Requested-With',
             'Content-Type',
             'Accept',
             'Authorization',
-            'Bearer',
+            'Bearer'
         ],
-        credentials: true,
+        credentials: true
     });
-    app.useGlobalFilters(new http_exception_filter_1.AllExceptionsFilter());
-    app.useGlobalPipes(new common_1.ValidationPipe({
+    // Register global exception filter
+    app.useGlobalFilters(new _httpexceptionfilter.AllExceptionsFilter());
+    // Register global ValidationPipe
+    app.useGlobalPipes(new _common.ValidationPipe({
         whitelist: true,
-        forbidNonWhitelisted: true,
+        forbidNonWhitelisted: true
     }));
     const port = configService.get('port') || 3000;
     await app.listen(port);
     logger.log(`Application is running on port ${port}`);
 }
 bootstrap();
+
 //# sourceMappingURL=main.js.map

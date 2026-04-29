@@ -1,17 +1,24 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.DailySalesReportDto = exports.PaymentMethodBreakdownDto = void 0;
-class PaymentMethodBreakdownDto {
-    count;
-    revenue;
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
 }
-exports.PaymentMethodBreakdownDto = PaymentMethodBreakdownDto;
-class DailySalesReportDto {
-    date;
-    totalSales;
-    totalRevenue;
-    totalItemsSold;
-    paymentMethodBreakdown;
-}
-exports.DailySalesReportDto = DailySalesReportDto;
+_export(exports, {
+    get DailySalesReportDto () {
+        return DailySalesReportDto;
+    },
+    get PaymentMethodBreakdownDto () {
+        return PaymentMethodBreakdownDto;
+    }
+});
+let PaymentMethodBreakdownDto = class PaymentMethodBreakdownDto {
+};
+let DailySalesReportDto = class DailySalesReportDto {
+};
+
 //# sourceMappingURL=daily-report-response.dto.js.map

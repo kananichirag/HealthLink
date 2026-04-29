@@ -1,8 +1,22 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserQueryDto = exports.TenantQueryDto = void 0;
-var tenant_query_dto_1 = require("./tenant-query.dto");
-Object.defineProperty(exports, "TenantQueryDto", { enumerable: true, get: function () { return tenant_query_dto_1.TenantQueryDto; } });
-var user_query_dto_1 = require("./user-query.dto");
-Object.defineProperty(exports, "UserQueryDto", { enumerable: true, get: function () { return user_query_dto_1.UserQueryDto; } });
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get TenantQueryDto () {
+        return _tenantquerydto.TenantQueryDto;
+    },
+    get UserQueryDto () {
+        return _userquerydto.UserQueryDto;
+    }
+});
+const _tenantquerydto = require("./tenant-query.dto");
+const _userquerydto = require("./user-query.dto");
+
 //# sourceMappingURL=index.js.map

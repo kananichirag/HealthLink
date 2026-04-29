@@ -1,26 +1,31 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "NotificationsController", {
+    enumerable: true,
+    get: function() {
+        return NotificationsController;
+    }
+});
+const _common = require("@nestjs/common");
+const _jwtauthguard = require("../auth/guards/jwt-auth.guard");
+const _notificationsservice = require("./notifications.service");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
+}
+function _ts_metadata(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.NotificationsController = void 0;
-const common_1 = require("@nestjs/common");
-const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
-const notifications_service_1 = require("./notifications.service");
+}
+function _ts_param(paramIndex, decorator) {
+    return function(target, key) {
+        decorator(target, key, paramIndex);
+    };
+}
 let NotificationsController = class NotificationsController {
-    notificationsService;
-    constructor(notificationsService) {
-        this.notificationsService = notificationsService;
-    }
     findAll(req, page, limit) {
         return this.notificationsService.findAll(req.user.sub, page, limit);
     }
@@ -30,35 +35,50 @@ let NotificationsController = class NotificationsController {
     markRead(id, req) {
         return this.notificationsService.markRead(id, req.user.sub);
     }
+    constructor(notificationsService){
+        this.notificationsService = notificationsService;
+    }
 };
-exports.NotificationsController = NotificationsController;
-__decorate([
-    (0, common_1.Get)(),
-    __param(0, (0, common_1.Req)()),
-    __param(1, (0, common_1.Query)('page', new common_1.DefaultValuePipe(1), common_1.ParseIntPipe)),
-    __param(2, (0, common_1.Query)('limit', new common_1.DefaultValuePipe(20), common_1.ParseIntPipe)),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Number, Number]),
-    __metadata("design:returntype", void 0)
+_ts_decorate([
+    (0, _common.Get)(),
+    _ts_param(0, (0, _common.Req)()),
+    _ts_param(1, (0, _common.Query)('page', new _common.DefaultValuePipe(1), _common.ParseIntPipe)),
+    _ts_param(2, (0, _common.Query)('limit', new _common.DefaultValuePipe(20), _common.ParseIntPipe)),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        Object,
+        Number,
+        Number
+    ]),
+    _ts_metadata("design:returntype", void 0)
 ], NotificationsController.prototype, "findAll", null);
-__decorate([
-    (0, common_1.Get)('unread-count'),
-    __param(0, (0, common_1.Req)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
+_ts_decorate([
+    (0, _common.Get)('unread-count'),
+    _ts_param(0, (0, _common.Req)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        Object
+    ]),
+    _ts_metadata("design:returntype", void 0)
 ], NotificationsController.prototype, "getUnreadCount", null);
-__decorate([
-    (0, common_1.Patch)(':id/read'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Req)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", void 0)
+_ts_decorate([
+    (0, _common.Patch)(':id/read'),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_param(1, (0, _common.Req)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        Object
+    ]),
+    _ts_metadata("design:returntype", void 0)
 ], NotificationsController.prototype, "markRead", null);
-exports.NotificationsController = NotificationsController = __decorate([
-    (0, common_1.Controller)('notifications'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __metadata("design:paramtypes", [notifications_service_1.NotificationsService])
+NotificationsController = _ts_decorate([
+    (0, _common.Controller)('notifications'),
+    (0, _common.UseGuards)(_jwtauthguard.JwtAuthGuard),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _notificationsservice.NotificationsService === "undefined" ? Object : _notificationsservice.NotificationsService
+    ])
 ], NotificationsController);
+
 //# sourceMappingURL=notifications.controller.js.map

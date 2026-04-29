@@ -1,30 +1,35 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "PatientPortalController", {
+    enumerable: true,
+    get: function() {
+        return PatientPortalController;
+    }
+});
+const _common = require("@nestjs/common");
+const _jwtauthguard = require("../auth/guards/jwt-auth.guard");
+const _rolesguard = require("../auth/guards/roles.guard");
+const _rolesdecorator = require("../auth/decorators/roles.decorator");
+const _client = require("@prisma/client");
+const _patientportalservice = require("./patient-portal.service");
+const _dto = require("./dto");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
+}
+function _ts_metadata(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.PatientPortalController = void 0;
-const common_1 = require("@nestjs/common");
-const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
-const roles_guard_1 = require("../auth/guards/roles.guard");
-const roles_decorator_1 = require("../auth/decorators/roles.decorator");
-const client_1 = require("@prisma/client");
-const patient_portal_service_1 = require("./patient-portal.service");
-const dto_1 = require("./dto");
+}
+function _ts_param(paramIndex, decorator) {
+    return function(target, key) {
+        decorator(target, key, paramIndex);
+    };
+}
 let PatientPortalController = class PatientPortalController {
-    patientPortalService;
-    constructor(patientPortalService) {
-        this.patientPortalService = patientPortalService;
-    }
     async listDoctors() {
         return this.patientPortalService.listDoctors();
     }
@@ -49,76 +54,112 @@ let PatientPortalController = class PatientPortalController {
     async getPrescriptionDetail(id, req) {
         return this.patientPortalService.getPrescriptionDetail(id, req.user.sub);
     }
+    constructor(patientPortalService){
+        this.patientPortalService = patientPortalService;
+    }
 };
-exports.PatientPortalController = PatientPortalController;
-__decorate([
-    (0, common_1.Get)('doctors'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('doctors'),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", []),
+    _ts_metadata("design:returntype", Promise)
 ], PatientPortalController.prototype, "listDoctors", null);
-__decorate([
-    (0, common_1.Post)('doctors/:id/connect'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Post)('doctors/:id/connect'),
+    (0, _common.HttpCode)(_common.HttpStatus.OK),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PatientPortalController.prototype, "connectWithDoctor", null);
-__decorate([
-    (0, common_1.Get)('doctors/:id/slots'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Query)('date')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('doctors/:id/slots'),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_param(1, (0, _common.Query)('date')),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        String
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PatientPortalController.prototype, "getAvailableSlots", null);
-__decorate([
-    (0, common_1.Post)('appointments'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
-    __param(0, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.BookAppointmentDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Post)('appointments'),
+    (0, _common.HttpCode)(_common.HttpStatus.CREATED),
+    _ts_param(0, (0, _common.Body)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.BookAppointmentDto === "undefined" ? Object : _dto.BookAppointmentDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PatientPortalController.prototype, "bookAppointment", null);
-__decorate([
-    (0, common_1.Patch)('appointments/:id/cancel'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Patch)('appointments/:id/cancel'),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PatientPortalController.prototype, "cancelAppointment", null);
-__decorate([
-    (0, common_1.Get)('appointments'),
-    __param(0, (0, common_1.Query)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.PatientAppointmentQueryDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('appointments'),
+    _ts_param(0, (0, _common.Query)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.PatientAppointmentQueryDto === "undefined" ? Object : _dto.PatientAppointmentQueryDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PatientPortalController.prototype, "listAppointments", null);
-__decorate([
-    (0, common_1.Get)('prescriptions'),
-    __param(0, (0, common_1.Query)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.PatientPrescriptionQueryDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('prescriptions'),
+    _ts_param(0, (0, _common.Query)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.PatientPrescriptionQueryDto === "undefined" ? Object : _dto.PatientPrescriptionQueryDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PatientPortalController.prototype, "listPrescriptions", null);
-__decorate([
-    (0, common_1.Get)('prescriptions/:id'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('prescriptions/:id'),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], PatientPortalController.prototype, "getPrescriptionDetail", null);
-exports.PatientPortalController = PatientPortalController = __decorate([
-    (0, common_1.Controller)('patient'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(client_1.Role.PATIENT),
-    __metadata("design:paramtypes", [patient_portal_service_1.PatientPortalService])
+PatientPortalController = _ts_decorate([
+    (0, _common.Controller)('patient'),
+    (0, _common.UseGuards)(_jwtauthguard.JwtAuthGuard, _rolesguard.RolesGuard),
+    (0, _rolesdecorator.Roles)(_client.Role.PATIENT),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _patientportalservice.PatientPortalService === "undefined" ? Object : _patientportalservice.PatientPortalService
+    ])
 ], PatientPortalController);
+
 //# sourceMappingURL=patient-portal.controller.js.map

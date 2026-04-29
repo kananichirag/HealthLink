@@ -1,22 +1,50 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ReportQueryDto = exports.PrescriptionCheckoutDto = exports.InventoryQueryDto = exports.PurchaseQueryDto = exports.RecordPurchaseDto = exports.UpdateMedicineDto = exports.AddMedicineDto = exports.MedicineQueryDto = exports.PrescriptionQueryDto = void 0;
-var prescription_query_dto_1 = require("./prescription-query.dto");
-Object.defineProperty(exports, "PrescriptionQueryDto", { enumerable: true, get: function () { return prescription_query_dto_1.PrescriptionQueryDto; } });
-var medicine_query_dto_1 = require("./medicine-query.dto");
-Object.defineProperty(exports, "MedicineQueryDto", { enumerable: true, get: function () { return medicine_query_dto_1.MedicineQueryDto; } });
-var add_medicine_dto_1 = require("./add-medicine.dto");
-Object.defineProperty(exports, "AddMedicineDto", { enumerable: true, get: function () { return add_medicine_dto_1.AddMedicineDto; } });
-var update_medicine_dto_1 = require("./update-medicine.dto");
-Object.defineProperty(exports, "UpdateMedicineDto", { enumerable: true, get: function () { return update_medicine_dto_1.UpdateMedicineDto; } });
-var record_purchase_dto_1 = require("./record-purchase.dto");
-Object.defineProperty(exports, "RecordPurchaseDto", { enumerable: true, get: function () { return record_purchase_dto_1.RecordPurchaseDto; } });
-var purchase_query_dto_1 = require("./purchase-query.dto");
-Object.defineProperty(exports, "PurchaseQueryDto", { enumerable: true, get: function () { return purchase_query_dto_1.PurchaseQueryDto; } });
-var inventory_query_dto_1 = require("./inventory-query.dto");
-Object.defineProperty(exports, "InventoryQueryDto", { enumerable: true, get: function () { return inventory_query_dto_1.InventoryQueryDto; } });
-var prescription_checkout_dto_1 = require("./prescription-checkout.dto");
-Object.defineProperty(exports, "PrescriptionCheckoutDto", { enumerable: true, get: function () { return prescription_checkout_dto_1.PrescriptionCheckoutDto; } });
-var report_query_dto_1 = require("./report-query.dto");
-Object.defineProperty(exports, "ReportQueryDto", { enumerable: true, get: function () { return report_query_dto_1.ReportQueryDto; } });
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get AddMedicineDto () {
+        return _addmedicinedto.AddMedicineDto;
+    },
+    get InventoryQueryDto () {
+        return _inventoryquerydto.InventoryQueryDto;
+    },
+    get MedicineQueryDto () {
+        return _medicinequerydto.MedicineQueryDto;
+    },
+    get PrescriptionCheckoutDto () {
+        return _prescriptioncheckoutdto.PrescriptionCheckoutDto;
+    },
+    get PrescriptionQueryDto () {
+        return _prescriptionquerydto.PrescriptionQueryDto;
+    },
+    get PurchaseQueryDto () {
+        return _purchasequerydto.PurchaseQueryDto;
+    },
+    get RecordPurchaseDto () {
+        return _recordpurchasedto.RecordPurchaseDto;
+    },
+    get ReportQueryDto () {
+        return _reportquerydto.ReportQueryDto;
+    },
+    get UpdateMedicineDto () {
+        return _updatemedicinedto.UpdateMedicineDto;
+    }
+});
+const _prescriptionquerydto = require("./prescription-query.dto");
+const _medicinequerydto = require("./medicine-query.dto");
+const _addmedicinedto = require("./add-medicine.dto");
+const _updatemedicinedto = require("./update-medicine.dto");
+const _recordpurchasedto = require("./record-purchase.dto");
+const _purchasequerydto = require("./purchase-query.dto");
+const _inventoryquerydto = require("./inventory-query.dto");
+const _prescriptioncheckoutdto = require("./prescription-checkout.dto");
+const _reportquerydto = require("./report-query.dto");
+
 //# sourceMappingURL=index.js.map

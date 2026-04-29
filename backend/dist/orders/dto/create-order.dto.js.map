@@ -1,1 +1,1 @@
-{"version":3,"file":"create-order.dto.js","sourceRoot":"","sources":["../../../src/orders/dto/create-order.dto.ts"],"names":[],"mappings":";;;;;;;;;;;;AAAA,qDAAyC;AAEzC,MAAa,cAAc;IAEzB,cAAc,CAAS;CACxB;AAHD,wCAGC;AADC;IADC,IAAA,wBAAM,GAAE;;sDACc"}
+{"version":3,"sources":["../../../src/orders/dto/create-order.dto.ts"],"sourcesContent":["import { IsUUID } from 'class-validator';\n\nexport class CreateOrderDto {\n  @IsUUID()\n  prescriptionId: string;\n}\n"],"names":["CreateOrderDto"],"mappings":";;;;+BAEaA;;;eAAAA;;;gCAFU;;;;;;;;;;AAEhB,IAAA,AAAMA,iBAAN,MAAMA;AAGb"}

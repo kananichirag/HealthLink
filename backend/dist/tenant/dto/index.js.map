@@ -1,1 +1,1 @@
-{"version":3,"file":"index.js","sourceRoot":"","sources":["../../../src/tenant/dto/index.ts"],"names":[],"mappings":";;;AAAA,yDAAsD;AAA7C,oHAAA,eAAe,OAAA"}
+{"version":3,"sources":["../../../src/tenant/dto/index.ts"],"sourcesContent":["export { CreateTenantDto } from './create-tenant.dto';\n"],"names":["CreateTenantDto"],"mappings":";;;;+BAASA;;;eAAAA,gCAAe;;;iCAAQ"}

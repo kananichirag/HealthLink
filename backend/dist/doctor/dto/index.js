@@ -1,26 +1,60 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.RescheduleDto = exports.AppointmentQueryDto = exports.SetMaxAppointmentsDto = exports.BlockDateDto = exports.AvailabilitySlotDto = exports.SetAvailabilityDto = exports.RequestConnectionDto = exports.PrescriptionItemDto = exports.CreatePrescriptionDto = exports.CreateAllergyReportDto = exports.PatientQueryDto = exports.CreatePatientDto = void 0;
-var create_patient_dto_1 = require("./create-patient.dto");
-Object.defineProperty(exports, "CreatePatientDto", { enumerable: true, get: function () { return create_patient_dto_1.CreatePatientDto; } });
-var patient_query_dto_1 = require("./patient-query.dto");
-Object.defineProperty(exports, "PatientQueryDto", { enumerable: true, get: function () { return patient_query_dto_1.PatientQueryDto; } });
-var create_allergy_report_dto_1 = require("./create-allergy-report.dto");
-Object.defineProperty(exports, "CreateAllergyReportDto", { enumerable: true, get: function () { return create_allergy_report_dto_1.CreateAllergyReportDto; } });
-var create_prescription_dto_1 = require("./create-prescription.dto");
-Object.defineProperty(exports, "CreatePrescriptionDto", { enumerable: true, get: function () { return create_prescription_dto_1.CreatePrescriptionDto; } });
-Object.defineProperty(exports, "PrescriptionItemDto", { enumerable: true, get: function () { return create_prescription_dto_1.PrescriptionItemDto; } });
-var request_connection_dto_1 = require("./request-connection.dto");
-Object.defineProperty(exports, "RequestConnectionDto", { enumerable: true, get: function () { return request_connection_dto_1.RequestConnectionDto; } });
-var set_availability_dto_1 = require("./set-availability.dto");
-Object.defineProperty(exports, "SetAvailabilityDto", { enumerable: true, get: function () { return set_availability_dto_1.SetAvailabilityDto; } });
-Object.defineProperty(exports, "AvailabilitySlotDto", { enumerable: true, get: function () { return set_availability_dto_1.AvailabilitySlotDto; } });
-var block_date_dto_1 = require("./block-date.dto");
-Object.defineProperty(exports, "BlockDateDto", { enumerable: true, get: function () { return block_date_dto_1.BlockDateDto; } });
-var set_max_appointments_dto_1 = require("./set-max-appointments.dto");
-Object.defineProperty(exports, "SetMaxAppointmentsDto", { enumerable: true, get: function () { return set_max_appointments_dto_1.SetMaxAppointmentsDto; } });
-var appointment_query_dto_1 = require("./appointment-query.dto");
-Object.defineProperty(exports, "AppointmentQueryDto", { enumerable: true, get: function () { return appointment_query_dto_1.AppointmentQueryDto; } });
-var reschedule_dto_1 = require("../../patient/dto/reschedule.dto");
-Object.defineProperty(exports, "RescheduleDto", { enumerable: true, get: function () { return reschedule_dto_1.RescheduleDto; } });
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get AppointmentQueryDto () {
+        return _appointmentquerydto.AppointmentQueryDto;
+    },
+    get AvailabilitySlotDto () {
+        return _setavailabilitydto.AvailabilitySlotDto;
+    },
+    get BlockDateDto () {
+        return _blockdatedto.BlockDateDto;
+    },
+    get CreateAllergyReportDto () {
+        return _createallergyreportdto.CreateAllergyReportDto;
+    },
+    get CreatePatientDto () {
+        return _createpatientdto.CreatePatientDto;
+    },
+    get CreatePrescriptionDto () {
+        return _createprescriptiondto.CreatePrescriptionDto;
+    },
+    get PatientQueryDto () {
+        return _patientquerydto.PatientQueryDto;
+    },
+    get PrescriptionItemDto () {
+        return _createprescriptiondto.PrescriptionItemDto;
+    },
+    get RequestConnectionDto () {
+        return _requestconnectiondto.RequestConnectionDto;
+    },
+    get RescheduleDto () {
+        return _rescheduledto.RescheduleDto;
+    },
+    get SetAvailabilityDto () {
+        return _setavailabilitydto.SetAvailabilityDto;
+    },
+    get SetMaxAppointmentsDto () {
+        return _setmaxappointmentsdto.SetMaxAppointmentsDto;
+    }
+});
+const _createpatientdto = require("./create-patient.dto");
+const _patientquerydto = require("./patient-query.dto");
+const _createallergyreportdto = require("./create-allergy-report.dto");
+const _createprescriptiondto = require("./create-prescription.dto");
+const _requestconnectiondto = require("./request-connection.dto");
+const _setavailabilitydto = require("./set-availability.dto");
+const _blockdatedto = require("./block-date.dto");
+const _setmaxappointmentsdto = require("./set-max-appointments.dto");
+const _appointmentquerydto = require("./appointment-query.dto");
+const _rescheduledto = require("../../patient/dto/reschedule.dto");
+
 //# sourceMappingURL=index.js.map

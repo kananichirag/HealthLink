@@ -1,30 +1,35 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "DoctorController", {
+    enumerable: true,
+    get: function() {
+        return DoctorController;
+    }
+});
+const _common = require("@nestjs/common");
+const _jwtauthguard = require("../auth/guards/jwt-auth.guard");
+const _rolesguard = require("../auth/guards/roles.guard");
+const _rolesdecorator = require("../auth/decorators/roles.decorator");
+const _client = require("@prisma/client");
+const _doctorservice = require("./doctor.service");
+const _dto = require("./dto");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
+}
+function _ts_metadata(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.DoctorController = void 0;
-const common_1 = require("@nestjs/common");
-const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
-const roles_guard_1 = require("../auth/guards/roles.guard");
-const roles_decorator_1 = require("../auth/decorators/roles.decorator");
-const client_1 = require("@prisma/client");
-const doctor_service_1 = require("./doctor.service");
-const dto_1 = require("./dto");
+}
+function _ts_param(paramIndex, decorator) {
+    return function(target, key) {
+        decorator(target, key, paramIndex);
+    };
+}
 let DoctorController = class DoctorController {
-    doctorService;
-    constructor(doctorService) {
-        this.doctorService = doctorService;
-    }
     async createPatient(dto, req) {
         return this.doctorService.createPatient(dto, req.user.sub, req.user.tenantId);
     }
@@ -85,181 +90,276 @@ let DoctorController = class DoctorController {
     async completeAppointment(id, req) {
         return this.doctorService.completeAppointment(id, req.user.sub, req.user.tenantId);
     }
+    constructor(doctorService){
+        this.doctorService = doctorService;
+    }
 };
-exports.DoctorController = DoctorController;
-__decorate([
-    (0, common_1.Post)('patients'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
-    __param(0, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.CreatePatientDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Post)('patients'),
+    (0, _common.HttpCode)(_common.HttpStatus.CREATED),
+    _ts_param(0, (0, _common.Body)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.CreatePatientDto === "undefined" ? Object : _dto.CreatePatientDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "createPatient", null);
-__decorate([
-    (0, common_1.Get)('patients'),
-    __param(0, (0, common_1.Query)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.PatientQueryDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('patients'),
+    _ts_param(0, (0, _common.Query)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.PatientQueryDto === "undefined" ? Object : _dto.PatientQueryDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "listPatients", null);
-__decorate([
-    (0, common_1.Post)('allergy-reports'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
-    __param(0, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.CreateAllergyReportDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Post)('allergy-reports'),
+    (0, _common.HttpCode)(_common.HttpStatus.CREATED),
+    _ts_param(0, (0, _common.Body)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.CreateAllergyReportDto === "undefined" ? Object : _dto.CreateAllergyReportDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "createAllergyReport", null);
-__decorate([
-    (0, common_1.Get)('allergy-reports/:patientId'),
-    __param(0, (0, common_1.Param)('patientId')),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('allergy-reports/:patientId'),
+    _ts_param(0, (0, _common.Param)('patientId')),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "getPatientAllergyReports", null);
-__decorate([
-    (0, common_1.Post)('prescriptions'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
-    __param(0, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.CreatePrescriptionDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Post)('prescriptions'),
+    (0, _common.HttpCode)(_common.HttpStatus.CREATED),
+    _ts_param(0, (0, _common.Body)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.CreatePrescriptionDto === "undefined" ? Object : _dto.CreatePrescriptionDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "createPrescription", null);
-__decorate([
-    (0, common_1.Post)('prescriptions/:id/dispatch'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)('pharmacyId')),
-    __param(2, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Post)('prescriptions/:id/dispatch'),
+    (0, _common.HttpCode)(_common.HttpStatus.OK),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_param(1, (0, _common.Body)('pharmacyId')),
+    _ts_param(2, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        String,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "dispatchToPharmacy", null);
-__decorate([
-    (0, common_1.Post)('pharmacy-connections'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
-    __param(0, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.RequestConnectionDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Post)('pharmacy-connections'),
+    (0, _common.HttpCode)(_common.HttpStatus.CREATED),
+    _ts_param(0, (0, _common.Body)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.RequestConnectionDto === "undefined" ? Object : _dto.RequestConnectionDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "requestConnection", null);
-__decorate([
-    (0, common_1.Get)('pharmacy-connections'),
-    __param(0, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('pharmacy-connections'),
+    _ts_param(0, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "listConnections", null);
-__decorate([
-    (0, common_1.Get)('pharmacies'),
-    __param(0, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('pharmacies'),
+    _ts_param(0, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "listPharmacies", null);
-__decorate([
-    (0, common_1.Delete)('pharmacy-connections/:id'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Delete)('pharmacy-connections/:id'),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "terminateConnection", null);
-__decorate([
-    (0, common_1.Patch)('pharmacy-connections/:id/accept'),
-    (0, roles_decorator_1.Roles)(client_1.Role.PHARMACY),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Patch)('pharmacy-connections/:id/accept'),
+    (0, _rolesdecorator.Roles)(_client.Role.PHARMACY),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "acceptConnection", null);
-__decorate([
-    (0, common_1.Get)('appointments'),
-    __param(0, (0, common_1.Query)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.AppointmentQueryDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('appointments'),
+    _ts_param(0, (0, _common.Query)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.AppointmentQueryDto === "undefined" ? Object : _dto.AppointmentQueryDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "listAppointments", null);
-__decorate([
-    (0, common_1.Get)('schedule'),
-    __param(0, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Get)('schedule'),
+    _ts_param(0, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "getSchedule", null);
-__decorate([
-    (0, common_1.Put)('schedule'),
-    __param(0, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.SetAvailabilityDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Put)('schedule'),
+    _ts_param(0, (0, _common.Body)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.SetAvailabilityDto === "undefined" ? Object : _dto.SetAvailabilityDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "setAvailability", null);
-__decorate([
-    (0, common_1.Post)('schedule/block'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
-    __param(0, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.BlockDateDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Post)('schedule/block'),
+    (0, _common.HttpCode)(_common.HttpStatus.CREATED),
+    _ts_param(0, (0, _common.Body)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.BlockDateDto === "undefined" ? Object : _dto.BlockDateDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "blockDate", null);
-__decorate([
-    (0, common_1.Delete)('schedule/block/:date'),
-    __param(0, (0, common_1.Param)('date')),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Delete)('schedule/block/:date'),
+    _ts_param(0, (0, _common.Param)('date')),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "unblockDate", null);
-__decorate([
-    (0, common_1.Put)('schedule/max-appointments'),
-    __param(0, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.SetMaxAppointmentsDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Put)('schedule/max-appointments'),
+    _ts_param(0, (0, _common.Body)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _dto.SetMaxAppointmentsDto === "undefined" ? Object : _dto.SetMaxAppointmentsDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "setMaxAppointments", null);
-__decorate([
-    (0, common_1.Delete)('appointments/:id'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Delete)('appointments/:id'),
+    (0, _common.HttpCode)(_common.HttpStatus.NO_CONTENT),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "cancelAppointment", null);
-__decorate([
-    (0, common_1.Patch)('appointments/:id/reschedule'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)(new common_1.ValidationPipe({ whitelist: true, transform: true }))),
-    __param(2, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, dto_1.RescheduleDto, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Patch)('appointments/:id/reschedule'),
+    (0, _common.HttpCode)(_common.HttpStatus.OK),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_param(1, (0, _common.Body)(new _common.ValidationPipe({
+        whitelist: true,
+        transform: true
+    }))),
+    _ts_param(2, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        typeof _dto.RescheduleDto === "undefined" ? Object : _dto.RescheduleDto,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "rescheduleAppointment", null);
-__decorate([
-    (0, common_1.Patch)('appointments/:id/complete'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Request)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Patch)('appointments/:id/complete'),
+    (0, _common.HttpCode)(_common.HttpStatus.OK),
+    _ts_param(0, (0, _common.Param)('id')),
+    _ts_param(1, (0, _common.Request)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        String,
+        Object
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], DoctorController.prototype, "completeAppointment", null);
-exports.DoctorController = DoctorController = __decorate([
-    (0, common_1.Controller)('doctor'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(client_1.Role.DOCTOR),
-    __metadata("design:paramtypes", [doctor_service_1.DoctorService])
+DoctorController = _ts_decorate([
+    (0, _common.Controller)('doctor'),
+    (0, _common.UseGuards)(_jwtauthguard.JwtAuthGuard, _rolesguard.RolesGuard),
+    (0, _rolesdecorator.Roles)(_client.Role.DOCTOR),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _doctorservice.DoctorService === "undefined" ? Object : _doctorservice.DoctorService
+    ])
 ], DoctorController);
+
 //# sourceMappingURL=doctor.controller.js.map

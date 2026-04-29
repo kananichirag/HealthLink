@@ -1,30 +1,29 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.PaginatedPrescriptionsResponseDto = exports.PrescriptionResponseDto = exports.PrescriptionItemResponseDto = void 0;
-class PrescriptionItemResponseDto {
-    id;
-    medicineId;
-    medicineName;
-    quantity;
-    createdAt;
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
 }
-exports.PrescriptionItemResponseDto = PrescriptionItemResponseDto;
-class PrescriptionResponseDto {
-    id;
-    patientId;
-    doctorId;
-    status;
-    createdAt;
-    updatedAt;
-    items;
-    itemCount;
-}
-exports.PrescriptionResponseDto = PrescriptionResponseDto;
-class PaginatedPrescriptionsResponseDto {
-    data;
-    total;
-    page;
-    limit;
-}
-exports.PaginatedPrescriptionsResponseDto = PaginatedPrescriptionsResponseDto;
+_export(exports, {
+    get PaginatedPrescriptionsResponseDto () {
+        return PaginatedPrescriptionsResponseDto;
+    },
+    get PrescriptionItemResponseDto () {
+        return PrescriptionItemResponseDto;
+    },
+    get PrescriptionResponseDto () {
+        return PrescriptionResponseDto;
+    }
+});
+let PrescriptionItemResponseDto = class PrescriptionItemResponseDto {
+};
+let PrescriptionResponseDto = class PrescriptionResponseDto {
+};
+let PaginatedPrescriptionsResponseDto = class PaginatedPrescriptionsResponseDto {
+};
+
 //# sourceMappingURL=prescription-response.dto.js.map

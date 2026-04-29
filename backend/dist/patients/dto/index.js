@@ -1,11 +1,29 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.PaginatedPatientsResponseDto = exports.PatientResponseDto = exports.UpdatePatientDto = exports.CreatePatientDto = void 0;
-var create_patient_dto_1 = require("./create-patient.dto");
-Object.defineProperty(exports, "CreatePatientDto", { enumerable: true, get: function () { return create_patient_dto_1.CreatePatientDto; } });
-var update_patient_dto_1 = require("./update-patient.dto");
-Object.defineProperty(exports, "UpdatePatientDto", { enumerable: true, get: function () { return update_patient_dto_1.UpdatePatientDto; } });
-var patient_response_dto_1 = require("./patient-response.dto");
-Object.defineProperty(exports, "PatientResponseDto", { enumerable: true, get: function () { return patient_response_dto_1.PatientResponseDto; } });
-Object.defineProperty(exports, "PaginatedPatientsResponseDto", { enumerable: true, get: function () { return patient_response_dto_1.PaginatedPatientsResponseDto; } });
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+function _export(target, all) {
+    for(var name in all)Object.defineProperty(target, name, {
+        enumerable: true,
+        get: Object.getOwnPropertyDescriptor(all, name).get
+    });
+}
+_export(exports, {
+    get CreatePatientDto () {
+        return _createpatientdto.CreatePatientDto;
+    },
+    get PaginatedPatientsResponseDto () {
+        return _patientresponsedto.PaginatedPatientsResponseDto;
+    },
+    get PatientResponseDto () {
+        return _patientresponsedto.PatientResponseDto;
+    },
+    get UpdatePatientDto () {
+        return _updatepatientdto.UpdatePatientDto;
+    }
+});
+const _createpatientdto = require("./create-patient.dto");
+const _updatepatientdto = require("./update-patient.dto");
+const _patientresponsedto = require("./patient-response.dto");
+
 //# sourceMappingURL=index.js.map

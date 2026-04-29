@@ -1,53 +1,68 @@
 "use strict";
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+Object.defineProperty(exports, "AuthController", {
+    enumerable: true,
+    get: function() {
+        return AuthController;
+    }
+});
+const _common = require("@nestjs/common");
+const _authservice = require("./auth.service");
+const _registerdto = require("./dto/register.dto");
+const _logindto = require("./dto/login.dto");
+function _ts_decorate(decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    else for(var i = decorators.length - 1; i >= 0; i--)if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
+}
+function _ts_metadata(k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.AuthController = void 0;
-const common_1 = require("@nestjs/common");
-const auth_service_1 = require("./auth.service");
-const register_dto_1 = require("./dto/register.dto");
-const login_dto_1 = require("./dto/login.dto");
+}
+function _ts_param(paramIndex, decorator) {
+    return function(target, key) {
+        decorator(target, key, paramIndex);
+    };
+}
 let AuthController = class AuthController {
-    authService;
-    constructor(authService) {
-        this.authService = authService;
-    }
     async register(dto) {
         return this.authService.register(dto);
     }
     async login(dto) {
         return this.authService.login(dto);
     }
+    constructor(authService){
+        this.authService = authService;
+    }
 };
-exports.AuthController = AuthController;
-__decorate([
-    (0, common_1.Post)('register'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [register_dto_1.RegisterDto]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Post)('register'),
+    (0, _common.HttpCode)(_common.HttpStatus.CREATED),
+    _ts_param(0, (0, _common.Body)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _registerdto.RegisterDto === "undefined" ? Object : _registerdto.RegisterDto
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], AuthController.prototype, "register", null);
-__decorate([
-    (0, common_1.Post)('login'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [login_dto_1.LoginDto]),
-    __metadata("design:returntype", Promise)
+_ts_decorate([
+    (0, _common.Post)('login'),
+    (0, _common.HttpCode)(_common.HttpStatus.OK),
+    _ts_param(0, (0, _common.Body)()),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _logindto.LoginDto === "undefined" ? Object : _logindto.LoginDto
+    ]),
+    _ts_metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
-exports.AuthController = AuthController = __decorate([
-    (0, common_1.Controller)('auth'),
-    __metadata("design:paramtypes", [auth_service_1.AuthService])
+AuthController = _ts_decorate([
+    (0, _common.Controller)('auth'),
+    _ts_metadata("design:type", Function),
+    _ts_metadata("design:paramtypes", [
+        typeof _authservice.AuthService === "undefined" ? Object : _authservice.AuthService
+    ])
 ], AuthController);
+
 //# sourceMappingURL=auth.controller.js.map
